@@ -1,7 +1,7 @@
-Source: dde-shell
-Section: DDE
+Source: velora-shell
+Section: lingmo
 Priority: optional
-Maintainer: Deepin Packages Builder <packages@deepin.com>
+Maintainer: Lingmo OS Team <team@lingmo.org>
 Build-Depends:
  debhelper-compat (= 13),
  cmake,
@@ -40,7 +40,7 @@ Build-Depends:
  treeland-protocols,
  wayland-protocols,
 Standards-Version: 4.6.2
-Homepage: https://github.com/linuxdeepin/dde-shell
+Homepage: https://github.com/LingmoOS/velora-shell
 
 Package: libdde-shell
 Architecture: any
