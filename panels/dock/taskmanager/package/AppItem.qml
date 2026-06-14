@@ -497,9 +497,13 @@ Item {
             interval: 50
             onTriggered: {
                 var point = root.mapToItem(null, root.width / 2, root.height / 2)
-                toolTip.text = root.itemId === "dde-trash" ? root.name + "-" + taskmanager.Applet.getTrashTipText() : root.name
-                toolTip.DockPanelPositioner.bounding = Qt.rect(point.x, point.y, toolTip.width, toolTip.height)
-                toolTip.open()
+                var tipText = root.itemId === "dde-trash" ? root.name + "-" + taskmanager.Applet.getTrashTipText() : root.name
+                // fix: 空文本时不显示 tooltip，避免灰色方块
+                if (tipText && tipText.trim() !== "") {
+                    toolTip.text = tipText
+                    toolTip.DockPanelPositioner.bounding = Qt.rect(point.x, point.y, toolTip.width, toolTip.height)
+                    toolTip.open()
+                }
             }
         }
     }

@@ -51,6 +51,11 @@ Item {
         if (!toolTipWindow)
             return
 
+        // fix: 空文本时不显示 tooltip，避免显示灰色空白方块
+        if (!text || text.trim() === "") {
+            return
+        }
+
         readyBinding = Qt.binding(function () {
             return toolTipWindow && toolTipWindow.currentItem === control
         })
