@@ -6,7 +6,7 @@ Build-Depends:
  debhelper-compat (= 13),
  cmake,
  dde-application-manager-api (>= 1.2.48),
- dde-tray-loader-dev (> 2.0.24),
+ velora-tray-loader-dev (> 2.0.24),
  extra-cmake-modules,
  libdtk6core-bin,
  libdtk6core-dev,
@@ -54,7 +54,7 @@ Description: DDE Shell library
 Package: dde-shell
 Architecture: any
 Depends:
- dde-tray-loader (>= 1.99.8),
+ velora-tray-loader (>= 1.99.8),
  libdde-shell (= ${binary:Version}),
  libdtk6declarative,
  libqt6sql6-sqlite,
