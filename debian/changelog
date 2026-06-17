@@ -1,3 +1,11 @@
+velora-shell (2.0.37.lingmo.1) unstable; urgency=medium
+
+  * fix(shell): 修正全局滚轮滚动方向适配问题
+  * fix(shell): 解决 KWin 自然滚动模式下所有组件滚动反向的问题，
+    兼容 Wayland 和 X11 平台的 KWin 窗口管理器，通过事件过滤修正滚轮 delta 方向
+  
+ -- Lingmo OS Team <team@lingmo.org>  Wed, 17 Jun 2026 12:00:00 +0800
+
 velora-shell (2.0.36.lingmo.1) unstable; urgency=medium
 
   * new release for Lingmo OS.

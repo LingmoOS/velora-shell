@@ -7,6 +7,7 @@
 #include "dsglobal.h"
 
 #include <QObject>
+#include <QPointer>
 
 DS_BEGIN_NAMESPACE
 
@@ -23,6 +24,7 @@ public:
 
 private:
     bool dconfigMigrate(const QString &newConf, const QString &oldConf);
+    bool eventFilter(QObject *obj, QEvent *event) override;
 };
 
 DS_END_NAMESPACE
