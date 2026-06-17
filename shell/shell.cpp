@@ -120,8 +120,7 @@ bool Shell::eventFilter(QObject *obj, QEvent *event)
                 wheelEvent->buttons(),
                 wheelEvent->modifiers(),
                 wheelEvent->phase(),
-                Qt::NoScrollPhase,
-                wheelEvent->scrollSource()
+                Qt::NoScrollPhase
             );
             correctedEvent->setAccepted(false);
             qApp->postEvent(obj, correctedEvent);
