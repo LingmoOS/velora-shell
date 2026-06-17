@@ -376,7 +376,7 @@ QStandardItem *TraySortOrderModel::createTrayItem(const QString &name,
     QString actualSectionType;
     if (sectionType.isEmpty()) {
         qWarning() << "createTrayItem called with empty sectionType for:" << name;
-        actualSectionType = SECTION_TRAY;
+        actualSectionType = SECTION_TRAY_ACTION;
     } else {
         actualSectionType = findSection(name, sectionType, forbiddenSections, pluginFlags);
         if (actualSectionType.isEmpty()) {
