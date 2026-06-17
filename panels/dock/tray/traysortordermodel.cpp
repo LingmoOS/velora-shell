@@ -369,66 +369,44 @@ QStandardItem *TraySortOrderModel::createTrayItem(const QString &name,
     // 参数验证
     if (name.isEmpty()) {
         qWarning() << "createTrayItem called with empty name, skipping";
-        return nullptr;  // 返回 null 而不是创建无效项
-    }
-
-    if (sectionType.isEmpty()) {
-        qWarning() << "createTrayItem called with empty sectionType for:" << name;
-        // 使用默认 section
-        QString actualSectionType = SECTION_TRAY;
-        
-        try {
-            registerToSection(name, actualSectionType);
-            
-            qDebug() << actualSectionType << name << delegateType;
-
-            // 安全创建 QStandardItem
-            QStandardItem * item = nullptr;
-            try {
-                item = new QStandardItem(name);
-                if (!item) {
-                    qCritical() << "Failed to allocate QStandardItem for:" << name;
-                    return nullptr;
-                }
-                
-                item->setData(name, TraySortOrderModel::SurfaceIdRole);
-                item->setData(true, TraySortOrderModel::VisibilityRole);
-                item->setData(true, TraySortOrderModel::DockVisibleRole);
-                item->setData(actualSectionType, TraySortOrderModel::SectionTypeRole);
-                item->setData(delegateType.isEmpty() ? "ActionLegacy" : delegateType, 
-                             TraySortOrderModel::DelegateTypeRole);  // 防止空 delegateType
-                item->setData(forbiddenSections, TraySortOrderModel::ForbiddenSectionsRole);
-        item->setData(-1, TraySortOrderModel::VisualIndexRole);
-        item->setData(pluginFlags, TraySortOrderModel::PluginFlagsRole);
-
-        return item;
-    }
-
-    QString actualSectionType = findSection(name, sectionType, forbiddenSections, pluginFlags);
-    
-    // 验证返回的 section 类型是否有效
-    if (actualSectionType.isEmpty()) {
-        qWarning() << "findSection returned empty string for:" << name 
-                  << ", using fallback:" << sectionType;
-        actualSectionType = sectionType;
-    }
-    
-    registerToSection(name, actualSectionType);
-
-    qDebug() << actualSectionType << name << delegateType;
-
-    QStandardItem * item = new QStandardItem(name);
-    
-    if (!item) {
-        qCritical() << "Failed to create QStandardItem for:" << name;
         return nullptr;
     }
-    
+
+    // 确定实际 section 类型
+    QString actualSectionType;
+    if (sectionType.isEmpty()) {
+        qWarning() << "createTrayItem called with empty sectionType for:" << name;
+        actualSectionType = SECTION_TRAY;
+    } else {
+        actualSectionType = findSection(name, sectionType, forbiddenSections, pluginFlags);
+        if (actualSectionType.isEmpty()) {
+            qWarning() << "findSection returned empty for:" << name << ", using fallback:" << sectionType;
+            actualSectionType = sectionType;
+        }
+    }
+
+    registerToSection(name, actualSectionType);
+    qDebug() << actualSectionType << name << delegateType;
+
+    // 安全创建 QStandardItem
+    QStandardItem *item = nullptr;
+    try {
+        item = new QStandardItem(name);
+        if (!item) {
+            qCritical() << "Failed to allocate QStandardItem for:" << name;
+            return nullptr;
+        }
+    } catch (const std::exception &e) {
+        qCritical() << "Exception creating QStandardItem for:" << name << "-" << e.what();
+        return nullptr;
+    }
+
     item->setData(name, TraySortOrderModel::SurfaceIdRole);
     item->setData(true, TraySortOrderModel::VisibilityRole);
     item->setData(true, TraySortOrderModel::DockVisibleRole);
     item->setData(actualSectionType, TraySortOrderModel::SectionTypeRole);
-    item->setData(delegateType, TraySortOrderModel::DelegateTypeRole);
+    item->setData(delegateType.isEmpty() ? "ActionLegacy" : delegateType,
+                 TraySortOrderModel::DelegateTypeRole);
     item->setData(forbiddenSections, TraySortOrderModel::ForbiddenSectionsRole);
     item->setData(-1, TraySortOrderModel::VisualIndexRole);
     item->setData(pluginFlags, TraySortOrderModel::PluginFlagsRole);
