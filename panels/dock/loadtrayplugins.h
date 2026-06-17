@@ -32,6 +32,7 @@ private:
 
     void startProcess(const QString &loaderPath, const QString &pluginPath, const QString &groupName);
     void setProcessEnv(QProcess *process);
+    void logFailedPlugin(const QString &pluginPath);
 
 private:
     struct ProcessInfo {

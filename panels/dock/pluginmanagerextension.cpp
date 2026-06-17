@@ -627,24 +627,138 @@ void PluginManager::plugin_manager_v1_request_message(Resource *resource, const 
 
 void PluginManager::plugin_manager_v1_create_plugin(Resource *resource, const QString &pluginId, const QString &itemKey, const QString &display_name, int32_t plugin_flags, int32_t type, int32_t size_policy, struct ::wl_resource *surface, uint32_t id)
 {
-    QWaylandSurface *qwaylandSurface = QWaylandSurface::fromResource(surface);
+    // 全局异常捕获：防止任何未处理的异常导致崩溃
+    try {
+        createPluginInternal(resource, pluginId, itemKey, display_name, plugin_flags, type, size_policy, surface, id);
+    } catch (const std::exception &e) {
+        qCritical() << "Exception in create_plugin for" << pluginId << "::" << itemKey 
+                   << "-" << e.what();
+    } catch (...) {
+        qCritical() << "Unknown exception in create_plugin for" << pluginId << "::" << itemKey;
+    }
+}
 
-    QWaylandResource shellSurfaceResource(wl_resource_create(resource->client(), &::plugin_interface,
-                                                           wl_resource_get_version(resource->handle), id));
+void PluginManager::createPluginInternal(Resource *resource, const QString &pluginId, const QString &itemKey, 
+                                         const QString &display_name, int32_t plugin_flags, int32_t type, 
+                                         int32_t size_policy, struct ::wl_resource *surface, uint32_t id)
+{
+    // 参数验证
+    if (!resource || !surface) {
+        qWarning() << "Invalid parameters in create_plugin: resource=" << resource << " surface=" << surface;
+        return;
+    }
 
-    send_position_changed(resource->handle, m_dockPosition);
-    send_color_theme_changed(resource->handle, m_dockColorTheme);
-    auto theme = DGuiApplicationHelper::instance()->applicationTheme();
-    send_active_color_changed(resource->handle, theme->activeColor().name(), theme->darkActiveColor().name());
-    send_font_changed(resource->handle, theme->fontName(), theme->fontPointSize());
-    send_theme_changed(resource->handle, theme->themeName(), theme->iconThemeName());
+    QWaylandSurface *qwaylandSurface = nullptr;
+    
+    // 安全获取 QWaylandSurface，防止空指针
+    try {
+        qwaylandSurface = QWaylandSurface::fromResource(surface);
+        if (!qwaylandSurface) {
+            qWarning() << "Failed to get QWaylandSurface from resource for plugin:" << pluginId;
+            return;
+        }
+    } catch (const std::exception &e) {
+        qCritical() << "Exception getting QWaylandSurface for" << pluginId << "-" << e.what();
+        return;
+    }
 
-    auto plugin = new PluginSurface(this, pluginId, itemKey, display_name, plugin_flags, type, size_policy, qwaylandSurface, shellSurfaceResource);
-    m_pluginSurfaces << plugin;
-    Q_EMIT pluginSurfaceCreated(plugin);
+    // 检查是否已存在相同插件（防止重复创建）
+    for (PluginSurface *existing : m_pluginSurfaces) {
+        if (existing && existing->pluginId() == pluginId && existing->itemKey() == itemKey) {
+            qDebug() << "Plugin already exists:" << pluginId << "::" << itemKey << ", skipping";
+            return;
+        }
+    }
 
-    sendEventMsg(resource, dockSizeMsg());
-    sendEventMsg(resource, popupMinHeightMsg());
+    // 安全创建 shell surface resource
+    QWaylandResource shellSurfaceResource;
+    try {
+        shellSurfaceResource = QWaylandResource(
+            wl_resource_create(resource->client(), &::plugin_interface,
+                             wl_resource_get_version(resource->handle), id)
+        );
+        
+        if (!shellSurfaceResource.resource()) {
+            qCritical() << "Failed to create shell surface resource for plugin:" << pluginId;
+            return;
+        }
+    } catch (const std::exception &e) {
+        qCritical() << "Exception creating shell surface resource for" << pluginId << "-" << e.what();
+        return;
+    }
+
+    // 发送初始化配置（非关键操作，失败不应阻止插件创建）
+    try {
+        send_position_changed(resource->handle, m_dockPosition);
+        send_color_theme_changed(resource->handle, m_dockColorTheme);
+        
+        auto theme = DGuiApplicationHelper::instance()->applicationTheme();
+        if (theme) {
+            send_active_color_changed(resource->handle, theme->activeColor().name(), theme->darkActiveColor().name());
+            send_font_changed(resource->handle, theme->fontName(), theme->fontPointSize());
+            send_theme_changed(resource->handle, theme->themeName(), theme->iconThemeName());
+        }
+    } catch (const std::exception &e) {
+        qWarning() << "Non-critical: Failed to send initial config for" << pluginId << "-" << e.what();
+        // 继续执行，不返回
+    }
+
+    qDebug() << "Creating new plugin:" << pluginId << "::" << itemKey 
+             << "type:" << type << "flags:" << plugin_flags;
+
+    // 安全创建 PluginSurface 对象
+    PluginSurface *plugin = nullptr;
+    try {
+        plugin = new PluginSurface(this, pluginId, itemKey, display_name, plugin_flags, type, 
+                                   size_policy, qwaylandSurface, shellSurfaceResource);
+        
+        if (!plugin) {
+            qCritical() << "Failed to allocate PluginSurface for:" << pluginId;
+            return;
+        }
+    } catch (const std::bad_alloc &e) {
+        qCritical() << "Memory allocation failed for PluginSurface:" << pluginId << "-" << e.what();
+        return;
+    } catch (const std::exception &e) {
+        qCritical() << "Exception creating PluginSurface for" << pluginId << "-" << e.what();
+        return;
+    }
+
+    // 添加到列表（使用安全的添加方式）
+    try {
+        m_pluginSurfaces.append(plugin);
+    } catch (const std::exception &e) {
+        qCritical() << "Failed to add plugin to list:" << pluginId << "-" << e.what();
+        delete plugin;  // 清理已创建的对象
+        return;
+    }
+    
+    // 使用 QMetaObject::invokeMethod 确保信号在主线程发射，避免竞态条件
+    try {
+        QMetaObject::invokeMethod(this, [this, plugin]() {
+            if (plugin) {  // 二次检查，确保对象仍然有效
+                Q_EMIT pluginSurfaceCreated(plugin);
+            }
+        }, Qt::QueuedConnection);
+    } catch (const std::exception &e) {
+        qWarning() << "Non-critical: Failed to emit signal for" << pluginId << "-" << e.what();
+        // 插件已创建，只是信号可能未发送，继续执行
+    }
+
+    // 发送尺寸和弹出高度信息（非关键操作）
+    try {
+        QString sizeMsg = dockSizeMsg();
+        QString popupMsg = popupMinHeightMsg();
+        
+        if (!sizeMsg.isEmpty()) {
+            sendEventMsg(resource, sizeMsg);
+        }
+        if (!popupMsg.isEmpty()) {
+            sendEventMsg(resource, popupMsg);
+        }
+    } catch (const std::exception &e) {
+        qWarning() << "Non-critical: Failed to send size/popup config for" << pluginId << "-" << e.what();
+    }
 }
 
 void PluginManager::plugin_manager_v1_create_popup_at(Resource *resource, const QString &pluginId, const QString &itemKey, int32_t type, int32_t x, int32_t y, struct ::wl_resource *surface, uint32_t id)
@@ -722,7 +836,25 @@ void PluginManager::setDockSize(const QSize &newDockSize)
 
 void PluginManager::removePluginSurface(PluginSurface *plugin)
 {
-    Q_EMIT pluginSurfaceDestroyed(plugin);
+    if (!plugin) {
+        qWarning() << "Attempted to remove null plugin surface";
+        return;
+    }
+
+    // 检查是否在列表中
+    if (!m_pluginSurfaces.contains(plugin)) {
+        qWarning() << "Plugin surface not found in list, may have been already removed:" 
+                  << plugin->pluginId() << "::" << plugin->itemKey();
+        return;
+    }
+
+    qDebug() << "Removing plugin surface:" << plugin->pluginId() << "::" << plugin->itemKey();
+    
+    // 使用 QMetaObject::invokeMethod 确保信号在主线程发射，避免竞态条件
+    QMetaObject::invokeMethod(this, [this, plugin]() {
+        Q_EMIT pluginSurfaceDestroyed(plugin);
+    }, Qt::QueuedConnection);
+
     m_pluginSurfaces.removeAll(plugin);
 }
 

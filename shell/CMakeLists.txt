@@ -33,6 +33,14 @@ add_executable(dde-shell
     override_dtkdeclarative_qml.qrc
 )
 
+# AlphaWatermark translations
+file(GLOB ALPHAWATERMARK_TRANSLATIONS translations/*.ts)
+qt_add_lupdate(dde-shell TS_FILES ${ALPHAWATERMARK_TRANSLATIONS})
+qt_add_lrelease(dde-shell TS_FILES ${ALPHAWATERMARK_TRANSLATIONS} QM_FILES_OUTPUT_VARIABLE ALPHAWATERMARK_QMS)
+
+install(FILES ${ALPHAWATERMARK_QMS}
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-shell/translations)
+
 qt_generate_wayland_protocol_client_sources(dde-shell
     FILES
         ${TREELAND_PROTOCOLS_DATA_DIR}/treeland-output-manager-v1.xml

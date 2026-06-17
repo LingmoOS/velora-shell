@@ -1,3 +1,14 @@
+velora-shell (2.0.39.lingmo.1) unstable; urgency=medium
+
+  * add alpha watermark and improve tray plugin stability
+  * add AlphaWatermark.qml and related translation support
+  * implement alpha build detection and watermark display logic
+  * add parameter validation and error handling for tray plugin loading
+  * add retry mechanism and crash logging for tray plugins
+  * fix potential null pointer issues in legacy tray delegate
+  
+ -- Lingmo OS Team <team@lingmo.org>  Wed, 17 Jun 2026 23:50:00 +0800
+
 velora-shell (2.0.37.lingmo.1) unstable; urgency=medium
 
   * fix(shell): 修正全局滚轮滚动方向适配问题
