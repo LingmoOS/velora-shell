@@ -368,7 +368,7 @@ QMap<QString, QString> LoadTrayPlugins::groupPlugins(const QStringList &pluginPa
     return pluginGroup;
 }
 
-void LoadTrayPlugins::logFailedPlugin(const QString &pluginPath)
+void LoadTrayPlugins::logFailedPlugin(const QString &pluginPath, const QString &reason)
 {
     // 记录失败的插件到日志文件，便于后续分析
     QString logPath = QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/failed_plugins.log";
@@ -377,7 +377,8 @@ void LoadTrayPlugins::logFailedPlugin(const QString &pluginPath)
     if (logFile.open(QIODevice::Append | QIODevice::Text)) {
         QTextStream stream(&logFile);
         stream << QDateTime::currentDateTime().toString(Qt::ISODate) 
-               << " - Failed plugin: " << pluginPath << "\n";
+               << " - Failed plugin: " << pluginPath
+               << " - Reason: " << reason << "\n";
         logFile.close();
         qDebug() << "Logged failed plugin to:" << logPath;
     } else {

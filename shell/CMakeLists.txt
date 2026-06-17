@@ -49,6 +49,7 @@ qt_generate_wayland_protocol_client_sources(dde-shell
 target_compile_definitions(dde-shell
 PRIVATE
     DS_VERSION=${CMAKE_PROJECT_VERSION}
+    DATADIR="${CMAKE_INSTALL_DATADIR}"
 )
 
 target_link_libraries(dde-shell PRIVATE

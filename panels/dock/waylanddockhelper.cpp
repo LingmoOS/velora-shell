@@ -82,7 +82,7 @@ void WaylandDockHelper::updateOverlapCheckerPos()
     if (!waylandScreen)
         return;
 
-    uint32_t anchor;
+    uint32_t anchor = 0;
     switch (m_panel->position()) {
     case Top:
         anchor = QtWayland::treeland_window_overlap_checker::anchor_top;
@@ -96,6 +96,9 @@ void WaylandDockHelper::updateOverlapCheckerPos()
     case Right:
         anchor = QtWayland::treeland_window_overlap_checker::anchor_right;
         break;
+    default:
+        qWarning() << "Unknown dock position:" << m_panel->position();
+        return;
     }
 
     m_overlapChecker->update(m_panel->dockSize(), m_panel->dockSize(), anchor, waylandScreen->output());
