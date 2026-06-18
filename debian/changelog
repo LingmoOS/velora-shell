@@ -1,4 +1,4 @@
-velora-shell (2.0.41.lingmo.1) unstable; urgency=medium
+velora-shell (2.0.42.lingmo.1) unstable; urgency=medium
 
   * implement native system tray architecture
     - add NativeTrayItems for built-in tray items such as clock, battery, and volume
