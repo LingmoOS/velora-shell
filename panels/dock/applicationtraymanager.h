@@ -16,8 +16,6 @@
 #include <QIcon>
 #include <QtQmlIntegration/qqmlintegration.h>  // For QML_ELEMENT macro
 
-namespace dock {
-
 struct ApplicationTrayItem {
     QString surfaceId;       // Format: "app::<sni-service-path>"
     QString service;         // D-Bus service name
@@ -76,5 +74,3 @@ private:
     QMap<QString, ApplicationTrayItem> m_apps;  // surfaceId -> item data
     QStringList m_knownServicePaths;
 };
-
-} // namespace dock

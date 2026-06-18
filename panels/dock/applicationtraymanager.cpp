@@ -9,8 +9,6 @@
 #include <QIcon>
 #include <QPixmap>
 
-namespace dock {
-
 ApplicationTrayManager::ApplicationTrayManager(QObject *parent)
     : QObject(parent)
 {
@@ -279,4 +277,4 @@ void ApplicationTrayManager::contextMenuApp(const QString &surfaceId)
     qDebug() << "[AppTray] Context menu requested for:" << surfaceId;
 }
 
-} // namespace dock
+}

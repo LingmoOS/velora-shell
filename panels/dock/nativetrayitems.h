@@ -14,8 +14,7 @@
 #include <QDBusInterface>
 #include <QDBusConnection>
 #include <QQmlEngine>
-
-namespace dock {
+#include <QtQmlIntegration/qqmlintegration.h>  // For QML_ELEMENT, QML_SINGLETON macros
 
 // Represents a single built-in tray item
 struct NativeTrayItem {
@@ -88,5 +87,3 @@ private:
     QTimer *m_datetimeTimer = nullptr;
     QTimer *m_slowUpdateTimer = nullptr;  // For battery, network, etc.
 };
-
-} // namespace dock

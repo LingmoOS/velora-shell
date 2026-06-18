@@ -10,8 +10,6 @@
 #include <QFile>
 #include <QDir>
 
-namespace dock {
-
 // Singleton instance for QML
 static NativeTrayItems *s_instance = nullptr;
 
@@ -399,4 +397,4 @@ QVariantMap NativeTrayItems::getItemData(const QString &pluginId) const
     return data;
 }
 
-} // namespace dock
+}
