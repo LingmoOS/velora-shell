@@ -59,6 +59,8 @@ private slots:
     void updateAppIcon(const QString &servicePath);
     void updateAppTitle(const QString &servicePath);
     void updateAppStatus(const QString &servicePath);
+    void handleAppIconChanged();
+    void handleAppAttentionChanged();
 
 private:
     void registerApp(const QString &servicePath);

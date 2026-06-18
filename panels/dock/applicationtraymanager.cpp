@@ -150,13 +150,10 @@ void ApplicationTrayManager::registerApp(const QString &servicePath)
 
     m_apps[surfaceId] = item;
 
-    // Connect signals for updates using modern syntax (prevents memory leak from old SLOT macro)
-    connect(iface, &QDBusInterface::signalChanged, this, [this, surfaceId](const QString &sigName) {
-        Q_UNUSED(sigName)
-        // Generic handler - will check which property changed
-        updateAppIcon(surfaceId);
-        emit appUpdated(surfaceId);
-    });
+    // Connect to SNI property change signals using string-based syntax
+    // (QDBusInterface doesn't support modern signal syntax for dynamic D-Bus signals)
+    connect(iface, SIGNAL(NewIcon()), this, SLOT(handleAppIconChanged()));
+    connect(iface, SIGNAL(NewAttentionIcon()), this, SLOT(handleAppAttentionChanged()));
 
     qDebug() << "[AppTray] Registered app:" << item.title << "(" << surfaceId << ")";
 
@@ -187,7 +184,6 @@ void ApplicationTrayManager::updateAppIcon(const QString &surfaceId)
 {
     if (!m_apps.contains(surfaceId) || !m_appInterfaces.contains(surfaceId)) return;
 
-    auto *iface = m_appInterfaces[surfaceId];
     QDBusInterface propsIface(m_apps[surfaceId].service, m_apps[surfaceId].path,
                               QStringLiteral("org.freedesktop.DBus.Properties"),
                               QDBusConnection::sessionBus());
@@ -203,7 +199,6 @@ void ApplicationTrayManager::updateAppTitle(const QString &surfaceId)
 {
     if (!m_apps.contains(surfaceId) || !m_appInterfaces.contains(surfaceId)) return;
 
-    auto *iface = m_appInterfaces[surfaceId];
     QDBusInterface propsIface(m_apps[surfaceId].service, m_apps[surfaceId].path,
                               QStringLiteral("org.freedesktop.DBus.Properties"),
                               QDBusConnection::sessionBus());
@@ -219,7 +214,6 @@ void ApplicationTrayManager::updateAppStatus(const QString &surfaceId)
 {
     if (!m_apps.contains(surfaceId) || !m_appInterfaces.contains(surfaceId)) return;
 
-    auto *iface = m_appInterfaces[surfaceId];
     QDBusInterface propsIface(m_apps[surfaceId].service, m_apps[surfaceId].path,
                               QStringLiteral("org.freedesktop.DBus.Properties"),
                               QDBusConnection::sessionBus());
@@ -277,4 +271,25 @@ void ApplicationTrayManager::contextMenuApp(const QString &surfaceId)
     qDebug() << "[AppTray] Context menu requested for:" << surfaceId;
 }
 
+void ApplicationTrayManager::handleAppIconChanged()
+{
+    // Find which app sent this signal and update it
+    auto *iface = qobject_cast<QDBusInterface *>(sender());
+    if (!iface) return;
+
+    QString servicePath = iface->path();
+    QString surfaceId = makeSurfaceId(servicePath);
+    updateAppIcon(surfaceId);
+    emit appUpdated(surfaceId);
+}
+
+void ApplicationTrayManager::handleAppAttentionChanged()
+{
+    auto *iface = qobject_cast<QDBusInterface *>(sender());
+    if (!iface) return;
+
+    QString servicePath = iface->path();
+    QString surfaceId = makeSurfaceId(servicePath);
+    updateAppStatus(surfaceId);  // Update attention state
+    emit appUpdated(surfaceId);
 }
