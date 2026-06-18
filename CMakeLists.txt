@@ -6,9 +6,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
 
 set(DS_VERSION "1.99.0" CACHE STRING "Define project version")
 project(DDEShell
-    VERSION "${DS_VERSION}"
+    VERSION "2.0.43"
     DESCRIPTION "dde-shell"
-    HOMEPAGE_URL "https://github.com/linuxdeepin/dde-shell"
+    HOMEPAGE_URL "https://github.com/LingmoOS/velora-shell"
     LANGUAGES CXX C
 )
 
