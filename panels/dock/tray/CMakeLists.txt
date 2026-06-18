@@ -45,6 +45,11 @@ target_link_libraries(dock-tray PUBLIC
     Dtk${DTK_VERSION_MAJOR}::Core
 )
 
+# Add parent directory to include path for nativetrayitems.h and applicationtraymanager.h
+target_include_directories(dock-tray PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/../"
+)
+
 add_library(trayitem SHARED
     trayitem.cpp
     trayitem.h
