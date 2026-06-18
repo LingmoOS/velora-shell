@@ -312,8 +312,8 @@ QString TraySortOrderModel::findSection(const QString &surfaceId, const QString 
 
     // 设置默认隐藏（仅对新插件）
     if (!found && // 不在列表中
-        !(pluginFlags & dock::Attribute_ForceDock) && // 非 forceDock
-        (pluginFlags & dock::Attribute_CanSetting) && // 可以在控制中心设置
+        !(pluginFlags & Dock::Attribute_ForceDock) && // 非 forceDock
+        (pluginFlags & Dock::Attribute_CanSetting) && // 可以在控制中心设置
         result != SECTION_FIXED && // 非固定位置插件（时间）
         !surfaceId.startsWith("internal/") && // 非内置插件
         !surfaceId.startsWith("application-tray::") // 非托盘图标
@@ -445,7 +445,7 @@ void TraySortOrderModel::updateVisualIndexes()
         if (stashPlaceholder == results[0]) continue;
         // forcedock and can not setting plugin need always set to visible
         auto pluginFlags = results[0]->data(TraySortOrderModel::PluginFlagsRole).toInt();
-        bool itemVisible = (pluginFlags & dock::Attribute_ForceDock) || !(pluginFlags & dock::Attribute_ForceDock) || !m_hiddenIds.contains(id);
+        bool itemVisible = (pluginFlags & Dock::Attribute_ForceDock) || !(pluginFlags & Dock::Attribute_ForceDock) || !m_hiddenIds.contains(id);
         bool dockVisible = !m_dockHiddenIds.contains(id);
         results[0]->setData(SECTION_STASHED, TraySortOrderModel::SectionTypeRole);
         results[0]->setData(itemVisible, TraySortOrderModel::VisibilityRole);
@@ -476,7 +476,7 @@ void TraySortOrderModel::updateVisualIndexes()
         if (results.isEmpty()) continue;
         if (results[0]->data(TraySortOrderModel::VisualIndexRole).toInt() != -1) continue;
         auto pluginFlags = results[0]->data(TraySortOrderModel::PluginFlagsRole).toInt();
-        bool itemVisible = (pluginFlags & dock::Attribute_ForceDock) || !(pluginFlags & dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
+        bool itemVisible = (pluginFlags & Dock::Attribute_ForceDock) || !(pluginFlags & Dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
         bool dockVisible = !m_dockHiddenIds.contains(id);
         results[0]->setData(SECTION_COLLAPSABLE, TraySortOrderModel::SectionTypeRole);
         results[0]->setData(itemVisible, TraySortOrderModel::VisibilityRole);
@@ -509,7 +509,7 @@ void TraySortOrderModel::updateVisualIndexes()
         if (results.isEmpty()) continue;
         if (results[0]->data(TraySortOrderModel::VisualIndexRole).toInt() != -1) continue;
         auto flags = results[0]->data(TraySortOrderModel::PluginFlagsRole).toInt();
-        bool itemVisible = (flags & dock::Attribute_ForceDock) || !(flags & dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
+        bool itemVisible = (flags & Dock::Attribute_ForceDock) || !(flags & Dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
         bool dockVisible = !m_dockHiddenIds.contains(id);
         results[0]->setData(SECTION_PINNED, TraySortOrderModel::SectionTypeRole);
         results[0]->setData(itemVisible, TraySortOrderModel::VisibilityRole);
@@ -538,7 +538,7 @@ void TraySortOrderModel::updateVisualIndexes()
         if (results.isEmpty()) continue;
         if (results[0]->data(TraySortOrderModel::VisualIndexRole).toInt() != -1) continue;
         auto flags = results[0]->data(TraySortOrderModel::PluginFlagsRole).toInt();
-        bool itemVisible = (flags & dock::Attribute_ForceDock) || !(flags & dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
+        bool itemVisible = (flags & Dock::Attribute_ForceDock) || !(flags & Dock::Attribute_CanSetting) || !m_hiddenIds.contains(id);
         bool dockVisible = !m_dockHiddenIds.contains(id);
         results[0]->setData(SECTION_FIXED, TraySortOrderModel::SectionTypeRole);
         results[0]->setData(itemVisible, TraySortOrderModel::VisibilityRole);

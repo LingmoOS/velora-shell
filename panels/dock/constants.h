@@ -86,12 +86,6 @@ enum TrayPluginSizePolicy {
     Custom = 1 << 1  // The custom
 };
 
-enum DockAttribute {
-    Attribute_Normal     = 0,
-    Attribute_ForceDock  = 1 << 0,
-    Attribute_CanSetting = 1 << 1,
-};
-
 /**
  * @brief 用于在插件的 message 和 MessageCallbackFunc 方法中解析 json格式 数据。
  * @since 2.0.0
@@ -178,4 +172,3 @@ Q_DECLARE_METATYPE(dock::TrayPopupType)
 Q_DECLARE_METATYPE(dock::OverFlowState)
 Q_DECLARE_METATYPE(dock::TrayPluginType)
 Q_DECLARE_METATYPE(dock::TrayPluginSizePolicy)
-Q_DECLARE_METATYPE(dock::DockAttribute)
