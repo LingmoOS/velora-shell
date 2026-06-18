@@ -21,6 +21,7 @@ Build-Depends:
  libxcb-icccm4-dev,
  libxcb-res0-dev,
  libxcb-util-dev,
+ libxcb-shape0-dev,
  libxcb1-dev,
  libxtst-dev,
  libyaml-cpp-dev,
