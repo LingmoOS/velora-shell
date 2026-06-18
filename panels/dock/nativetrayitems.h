@@ -23,13 +23,13 @@ struct NativeTrayItem {
     QString displayName;     // Human-readable name
     QString dccIcon;         // Icon path for control center
     int pluginType = 0;      // Dock::Tray, Dock::Quick, or Dock::Fixed
-    int sectionType = 0;     // fixed, pinned, collapsable, stashed
+    QString sectionType;     // "fixed", "pinned", "collapsable"
     bool visible = true;
 
     // Constructor for convenient initialization
     NativeTrayItem() = default;
     NativeTrayItem(const QString &id, const QString &key, const QString &name,
-                   const QString &icon, int type, int section, bool vis)
+                   const QString &icon, int type, const QString &section, bool vis)
         : pluginId(id), itemKey(key), displayName(name), dccIcon(icon),
           pluginType(type), sectionType(section), visible(vis) {}
 };
