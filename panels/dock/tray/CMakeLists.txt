@@ -31,10 +31,10 @@ qt_add_qml_module(dock-tray
         SurfaceSubPopup.qml
         TrayItemSurfacePopup.qml
         ShellSurfaceItemProxy.qml
-        NativeTrayItemDelegate.qml
-        AppTrayItemDelegate.qml
-        TrayItemDelegateChooser.qml
-        TrayContainer.qml
+        package/NativeTrayItemDelegate.qml
+        package/AppTrayItemDelegate.qml
+        package/TrayItemDelegateChooser.qml
+        package/TrayContainer.qml
 
     OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/tray/
 )
