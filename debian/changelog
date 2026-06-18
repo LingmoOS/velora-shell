@@ -1,3 +1,13 @@
+velora-shell (2.0.41.lingmo.1) unstable; urgency=medium
+
+  * implement native system tray architecture
+    - add NativeTrayItems for built-in tray items such as clock, battery, and volume
+    - add ApplicationTrayManager to manage third-party tray icons via the Status Notifier Item (SNI) protocol
+    - remove external tray plugin loading and eliminate related IPC overhead and dependencies
+    - add QML delegates and tray data update mechanisms for native tray integration
+  
+ -- Lingmo OS Team <team@lingmo.org>  Thu, 18 Jun 2026 14:10:00 +0800
+
 velora-shell (2.0.39.lingmo.1) unstable; urgency=medium
 
   * add alpha watermark and improve tray plugin stability

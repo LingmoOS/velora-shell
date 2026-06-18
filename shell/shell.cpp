@@ -19,6 +19,7 @@
 #include <QLocale>
 #include <QDir>
 #include <QRegularExpression>
+#include <QTimer>
 #include <memory>
 #include <qmlengine.h>
 
@@ -283,29 +284,36 @@ bool Shell::isAlphaBuild()
 
 void Shell::showAlphaWatermark()
 {
-    if (!isAlphaBuild()) {
-        qDebug() << "Not an Alpha build, skipping watermark";
-        return;
-    }
+    // Defer watermark creation until event loop is running and QML engine is ready.
+    // Using QueuedConnection ensures this runs after main() returns to event loop,
+    // which is after AppletManager::exec() has set up the QML root object.
+    QTimer::singleShot(0, this, [this]() {
+        if (!isAlphaBuild()) {
+            qDebug(dsLoaderLog()) << "Not an Alpha build, skipping watermark";
+            return;
+        }
 
-    qDebug() << "Alpha build detected, showing watermark";
+        qDebug(dsLoaderLog()) << "Alpha build detected, showing watermark";
 
-    QQmlComponent component(DQmlEngine().engine());
-    component.loadUrl(QUrl(QStringLiteral("qrc:/shell/AlphaWatermark.qml")));
+        auto *engine = DQmlEngine().engine();
+        QQmlComponent component(engine);
+        component.loadUrl(QUrl(QStringLiteral("qrc:/shell/AlphaWatermark.qml")));
 
-    if (component.isError()) {
-        qCWarning(dsLoaderLog()) << "Failed to load AlphaWatermark.qml:" << component.errors();
-        return;
-    }
+        if (component.isError()) {
+            qCWarning(dsLoaderLog()) << "Failed to load AlphaWatermark.qml:" << component.errors();
+            return;
+        }
 
-    QObject *object = component.create();
-    if (auto *window = qobject_cast<QQuickWindow *>(object)) {
-        m_watermarkWindow = window;
-        window->show();
-    } else {
-        qCWarning(dsLoaderLog()) << "AlphaWatermark root object is not a window";
-        delete object;
-    }
+        QObject *object = component.create();
+        if (auto *window = qobject_cast<QQuickWindow *>(object)) {
+            m_watermarkWindow = window;
+            window->show();
+            qDebug(dsLoaderLog()) << "AlphaWatermark window shown successfully";
+        } else {
+            qCWarning(dsLoaderLog()) << "AlphaWatermark root object is not a window";
+            delete object;
+        }
+    });
 }
 
 DS_END_NAMESPACE

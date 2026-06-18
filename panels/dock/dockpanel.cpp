@@ -16,6 +16,8 @@
 #include "dockfrontadaptor.h"
 #include "dockdaemonadaptor.h"
 #include "loadtrayplugins.h"
+#include "nativetrayitems.h"
+#include "applicationtraymanager.h"
 
 #include <DDBusSender>
 #include <QQuickWindow>
@@ -35,7 +37,9 @@ DockPanel::DockPanel(QObject *parent)
     , m_theme(ColorTheme::Dark)
     , m_hideState(Show)
     , m_dockScreen(nullptr)
-    , m_loadTrayPlugins(new LoadTrayPlugins(this))
+    , m_loadTrayPlugins(nullptr)  // Disabled: use native built-in items instead
+    , m_nativeTrayItems(new NativeTrayItems(this))
+    , m_appTrayManager(new ApplicationTrayManager(this))
     , m_compositorReady(false)
     , m_launcherShown(false)
     , m_contextDragging(false)
@@ -43,7 +47,16 @@ DockPanel::DockPanel(QObject *parent)
 {
     connect(this, &DockPanel::compositorReadyChanged, this, [this] {
         if (!m_compositorReady) return;
-        m_loadTrayPlugins->loadDockPlugins();
+        // Use native built-in tray items instead of external plugin processes
+        qDebug(dockLog) << "Initializing native tray items...";
+        m_nativeTrayItems->initialize();
+        
+        // Initialize SNI-based application tray manager (WeChat, QQ, Fcitx, etc.)
+        qDebug(dockLog) << "Initializing application tray manager...";
+        m_appTrayManager->initialize();
+        
+        // Note: External plugin loading (LoadTrayPlugins) has been disabled
+        // to eliminate IPC overhead, crash issues, and .so dependency problems.
     });
 }
 

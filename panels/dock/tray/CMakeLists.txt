@@ -22,11 +22,19 @@ qt_add_qml_module(dock-tray
         trayitempositionmanager.h
         ksortfilterproxymodel.cpp
         ksortfilterproxymodel.h
+        ../nativetrayitems.cpp
+        ../nativetrayitems.h
+        ../applicationtraymanager.cpp
+        ../applicationtraymanager.h
     QML_FILES
         SurfacePopup.qml
         SurfaceSubPopup.qml
         TrayItemSurfacePopup.qml
         ShellSurfaceItemProxy.qml
+        NativeTrayItemDelegate.qml
+        AppTrayItemDelegate.qml
+        TrayItemDelegateChooser.qml
+        TrayContainer.qml
 
     OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/tray/
 )

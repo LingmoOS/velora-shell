@@ -79,4 +79,54 @@ LQM.DelegateChooser {
             }
         }
     }
+    LQM.DelegateChoice {
+        roleValue: "native-tray-item"
+        TrayItemPositioner {
+            visualSize: nativeTrayItem.visualSize
+            contentItem: NativeTrayItemDelegate {
+                id: nativeTrayItem
+                itemPadding: root.itemPadding
+                itemVisible: nativeTrayPositioner.itemVisible
+                dragable: model.sectionType !== "fixed"
+
+                onClicked: function(pluginId) {
+                    console.log("[NativeTray] Clicked:", pluginId)
+                    // Handle click actions for specific items
+                    if (pluginId === "shutdown") {
+                        DockCompositor.requestShutdown(0)
+                    } else if (pluginId === "power" || pluginId === "brightness") {
+                        // Open control center relevant page
+                        DockCore.DockPanel.openDockSettings()
+                    }
+                }
+            }
+        }
+    }
+    LQM.DelegateChoice {
+        roleValue: "app-tray-item"
+        TrayItemPositioner {
+            visualSize: appTrayItem.visualSize
+            contentItem: AppTrayItemDelegate {
+                id: appTrayItem
+                itemPadding: root.itemPadding
+                itemVisible: appTrayPositioner.itemVisible
+
+                onClicked: function(surfaceId) {
+                    console.log("[AppTray] Activated:", surfaceId)
+                    // Call Activate on the SNI item
+                    if (DDT.ApplicationTrayManager) {
+                        DDT.ApplicationTrayManager.activateApp(surfaceId)
+                    }
+                }
+
+                rightClicked: function(surfaceId) {
+                    console.log("[AppTray] Context menu:", surfaceId)
+                    // Call ContextMenu on the SNI item
+                    if (DDT.ApplicationTrayManager) {
+                        DDT.ApplicationTrayManager.contextMenuApp(surfaceId)
+                    }
+                }
+            }
+        }
+    }
 }

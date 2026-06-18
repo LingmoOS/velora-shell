@@ -30,6 +30,10 @@ file(
     waylanddockhelper.cpp
     loadtrayplugins.h
     loadtrayplugins.cpp
+    nativetrayitems.h
+    nativetrayitems.cpp
+    applicationtraymanager.h
+    applicationtraymanager.cpp
 )
 
 # Old dbus interface compatible
