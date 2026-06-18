@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 find_package(GTest REQUIRED)
+if(NOT TARGET GTest::gmock)
+    message(WARNING "GTest::gmock not found, skipping notifyserverapplet_tests")
+    return()
+endif()
 find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS
     Core
     Test
