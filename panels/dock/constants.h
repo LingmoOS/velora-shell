@@ -157,7 +157,6 @@ Q_ENUM_NS(TrayPopupType)
 Q_ENUM_NS(OverFlowState)
 Q_ENUM_NS(TrayPluginType)
 Q_ENUM_NS(TrayPluginSizePolicy)
-Q_ENUM_NS(DockAttribute)
 }
 
 Q_DECLARE_METATYPE(dock::SIZE)
