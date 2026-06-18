@@ -147,7 +147,7 @@ void NativeTrayItems::initialize()
     emit initialized();
 }
 
-void NativeTrayItems::registerItem(const NativeTrayItem &item)
+void NativeTrayItems::registerItem(NativeTrayItem item)
 {
     m_items[item.pluginId] = item;
     qDebug() << "[NativeTray] Registered:" << item.pluginId << "-" << item.displayName;
@@ -395,6 +395,4 @@ QVariantMap NativeTrayItems::getItemData(const QString &pluginId) const
     data[QStringLiteral("sectionType")] = item.sectionType;
 
     return data;
-}
-
 }

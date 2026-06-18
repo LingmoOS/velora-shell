@@ -61,7 +61,7 @@ private slots:
     void updateBluetooth();
 
 private:
-    void registerItem(const NativeTrayItem &item);
+    void registerItem(NativeTrayItem item);  // Take by value for aggregate initialization
     void setupDBusConnections();
     void setupTimers();
 
