@@ -16,6 +16,8 @@
 #include <QQmlEngine>
 #include <QtQmlIntegration/qqmlintegration.h>  // For QML_ELEMENT, QML_SINGLETON macros
 
+namespace dock {
+
 // Represents a single built-in tray item
 struct NativeTrayItem {
     QString pluginId;        // e.g., "datetime", "power", "sound"
@@ -94,3 +96,5 @@ private:
     QTimer *m_datetimeTimer = nullptr;
     QTimer *m_slowUpdateTimer = nullptr;  // For battery, network, etc.
 };
+
+} // namespace dock

@@ -9,6 +9,8 @@
 #include <QIcon>
 #include <QPixmap>
 
+namespace dock {
+
 ApplicationTrayManager::ApplicationTrayManager(QObject *parent)
     : QObject(parent)
 {
@@ -293,3 +295,5 @@ void ApplicationTrayManager::handleAppAttentionChanged()
     updateAppStatus(surfaceId);  // Update attention state
     emit appUpdated(surfaceId);
 }
+
+} // namespace dock
