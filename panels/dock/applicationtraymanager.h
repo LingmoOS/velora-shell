@@ -14,6 +14,7 @@
 #include <QDBusConnection>
 #include <QMap>
 #include <QIcon>
+#include <QtQmlIntegration/qqmlintegration.h>  // For QML_ELEMENT macro
 
 namespace dock {
 
