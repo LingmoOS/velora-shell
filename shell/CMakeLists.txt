@@ -12,7 +12,7 @@ if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
     pkg_check_modules(Systemd REQUIRED libsystemd)
     pkg_get_variable(SYSTEMD_USER_UNIT_DIR libsystemd systemduserunitdir)
     if (NOT SYSTEMD_USER_UNIT_DIR)
-        set(SYSTEMD_USER_UNIT_DIR ${CMAKE_INSTALL_LIBDIR}/systemd/user)
+        set(SYSTEMD_USER_UNIT_DIR ${CMAKE_INSTALL_PREFIX}/lib/systemd/user)
     endif()
 endif()
 

@@ -102,6 +102,28 @@ if(BUILD_TESTING)
     add_subdirectory(tests)
 endif(BUILD_TESTING)
 
+# Build translations
+file(GLOB_RECURSE TS_FILES "${CMAKE_SOURCE_DIR}"/*.ts)
+list(FILTER TS_FILES EXCLUDE REGEX "tests/|example/")
+if(TS_FILES)
+    if(TARGET Qt6::lrelease)
+        qt_add_translations(dde-shell-translations
+            TS_FILES ${TS_FILES}
+            QM_OUTPUT_VARIABLE QM_FILES
+            LRELEASE_OPTIONS -removeidentical
+        )
+        install(FILES ${QM_FILES}
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-shell/translations
+        )
+    elseif(TARGET Qt5::lrelease)
+        qt5_add_translation(QM_FILES ${TS_FILES})
+        add_custom_target(dde-shell-translations ALL DEPENDS ${QM_FILES})
+        install(FILES ${QM_FILES}
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-shell/translations
+        )
+    endif()
+endif()
+
 configure_package_config_file(
     "${CMAKE_CURRENT_LIST_DIR}/misc/DDEShellConfig.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/DDEShellConfig.cmake"
