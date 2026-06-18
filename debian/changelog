@@ -1,4 +1,4 @@
-velora-shell (2.0.43.lingmo.1) unstable; urgency=medium
+velora-shell (2.0.44.lingmo.1) unstable; urgency=medium
 
   * rework system tray architecture and remove external tray dependencies
     - remove Alpha watermark related code and assets
