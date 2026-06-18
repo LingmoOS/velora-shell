@@ -11,15 +11,6 @@
 #include <QGuiApplication>
 #include <QLoggingCategory>
 #include <QQmlAbstractUrlInterceptor>
-#include <QWheelEvent>
-#include <QProcessEnvironment>
-#include <QFile>
-#include <QTextStream>
-#include <QTranslator>
-#include <QLocale>
-#include <QDir>
-#include <QRegularExpression>
-#include <QTimer>
 #include <memory>
 #include <qmlengine.h>
 
@@ -50,41 +41,12 @@ public:
 Shell::Shell(QObject *parent)
     : QObject(parent)
 {
-    // Load translations for AlphaWatermark
-    loadTranslations();
-
     // Since Wayland has no concept of primaryScreen, it is necessary to rely on wayland private protocols
     // to update the client's primaryScreen information
 
     auto platformName = QGuiApplication::platformName();
     if (QStringLiteral("wayland") == platformName) {
         new TreelandOutputWatcher(this);
-    }
-
-    // fix: 全局滚轮方向修正，解决 KWin 自然滚动下所有组件滚动反向的问题
-    qApp->installEventFilter(this);
-}
-
-void Shell::loadTranslations()
-{
-    // Search for translation files in standard locations
-    const QString translationDir = QStringLiteral(DATADIR "/dde-shell/translations");
-    const QString locale = QLocale::system().name();
-
-    // Try to load translation for current locale (e.g., alphawatermark_zh_CN.qm)
-    QTranslator *translator = new QTranslator(this);
-    if (translator->load(QStringLiteral("alphawatermark_") + locale, translationDir)) {
-        qApp->installTranslator(translator);
-        qDebug(dsLoaderLog()) << "Loaded AlphaWatermark translation for" << locale;
-    } else {
-        // Try without country code (e.g., alphawatermark_zh.qm)
-        QString langCode = locale.split('_').first();
-        if (translator->load(QStringLiteral("alphawatermark_") + langCode, translationDir)) {
-            qApp->installTranslator(translator);
-            qDebug(dsLoaderLog()) << "Loaded AlphaWatermark translation for" << langCode;
-        } else {
-            delete translator;
-        }
     }
 }
 
@@ -104,67 +66,6 @@ void Shell::setFlickableWheelDeceleration(const int &value)
 {
     if (qEnvironmentVariableIsEmpty("QT_QUICK_FLICKABLE_WHEEL_DECELERATION"))
         qputenv("QT_QUICK_FLICKABLE_WHEEL_DECELERATION", QString::number(value).toLocal8Bit());
-}
-
-bool Shell::eventFilter(QObject *obj, QEvent *event)
-{
-    if (event->type() == QEvent::Wheel) {
-        auto *wheelEvent = static_cast<QWheelEvent *>(event);
-
-        // 检测是否需要反转滚轮方向：
-        //
-        // 问题根因：X11 + KWin 环境下，libinput 自然滚动开启时，
-        //   X Server 发送反转后的 delta 给应用，但 Qt X11 平台插件不设置 inverted 标志，
-        //   导致所有 Flickable/ListView/ScrollView 滚动方向相反。
-        //
-        // 检测优先级（由高到低）：
-        //   1. DDE_SHELL_INVERT_WHEEL=1 环境变量（手动强制）
-        //   2. wheelEvent->inverted()（Qt Wayland 平台已标记）
-        //   3. 自动检测：X11 + KWin（通过 XDG_CURRENT_DESKTOP 或 KDE_SESSION_VERSION）
-
-        static const bool forceInvert = qEnvironmentVariableIsSet("DDE_SHELL_INVERT_WHEEL")
-            && qEnvironmentVariableIntValue("DDE_SHELL_INVERT_WHEEL") > 0;
-
-        bool needInvert = forceInvert;
-
-        if (!needInvert && wheelEvent->inverted()) {
-            needInvert = true;
-        }
-
-        if (!needInvert) {
-            // 自动检测 X11 + KWin 环境
-            static const bool autoDetected = []() -> bool {
-                if (QGuiApplication::platformName() != QStringLiteral("xcb"))
-                    return false;
-                QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-                QString desktop = env.value("XDG_CURRENT_DESKTOP", "");
-                if (desktop.contains("KDE", Qt::CaseInsensitive)
-                    || desktop.contains("KWIN", Qt::CaseInsensitive))
-                    return true;
-                // 也检查 KDE_SESSION_VERSION（KDE Plasma 会设置此变量）
-                return env.contains("KDE_SESSION_VERSION");
-            }();
-            needInvert = autoDetected;
-        }
-
-        if (needInvert) {
-            // 反转 delta 值，补偿 libinput 自然滚动导致的反转
-            auto *correctedEvent = new QWheelEvent(
-                wheelEvent->position(),
-                wheelEvent->globalPosition(),
-                -wheelEvent->pixelDelta(),
-                -wheelEvent->angleDelta(),
-                wheelEvent->buttons(),
-                wheelEvent->modifiers(),
-                wheelEvent->phase(),
-                Qt::NoScrollPhase
-            );
-            correctedEvent->setAccepted(false);
-            qApp->postEvent(obj, correctedEvent);
-            return true;
-        }
-    }
-    return QObject::eventFilter(obj, event);
 }
 
 void Shell::dconfigsMigrate()
@@ -250,70 +151,6 @@ bool Shell::dconfigMigrate(const QString &newConf, const QString &oldConf)
     }
 
     return true;
-}
-
-bool Shell::isAlphaBuild()
-{
-    // Check /system/release for TYPE=Alpha
-    QFile releaseFile(QStringLiteral("/system/release"));
-    if (releaseFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QTextStream in(&releaseFile);
-        while (!in.atEnd()) {
-            QString line = in.readLine().trimmed();
-            if (line.startsWith(QLatin1String("TYPE="))) {
-                QString type = line.mid(5).remove('"');
-                releaseFile.close();
-                return type.compare(QLatin1String("Alpha"), Qt::CaseInsensitive) == 0;
-            }
-        }
-        releaseFile.close();
-    }
-
-    // Fallback: check /system/.version for alpha pattern (e.g., 26a01)
-    QFile versionFile(QStringLiteral("/system/.version"));
-    if (versionFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QString version = QTextStream(&versionFile).readAll().trimmed();
-        versionFile.close();
-        // Match pattern like 26a01, 27a03, etc. (contains 'a' but not 'b' or 'R')
-        QRegularExpression alphaPattern(QRegularExpression::anchoredPattern("\\d+a\\d+"));
-        return alphaPattern.match(version).hasMatch();
-    }
-
-    return false;
-}
-
-void Shell::showAlphaWatermark()
-{
-    // Defer watermark creation until event loop is running and QML engine is ready.
-    // Using QueuedConnection ensures this runs after main() returns to event loop,
-    // which is after AppletManager::exec() has set up the QML root object.
-    QTimer::singleShot(0, this, [this]() {
-        if (!isAlphaBuild()) {
-            qDebug(dsLoaderLog()) << "Not an Alpha build, skipping watermark";
-            return;
-        }
-
-        qDebug(dsLoaderLog()) << "Alpha build detected, showing watermark";
-
-        auto *engine = DQmlEngine().engine();
-        QQmlComponent component(engine);
-        component.loadUrl(QUrl(QStringLiteral("qrc:/shell/AlphaWatermark.qml")));
-
-        if (component.isError()) {
-            qCWarning(dsLoaderLog()) << "Failed to load AlphaWatermark.qml:" << component.errors();
-            return;
-        }
-
-        QObject *object = component.create();
-        if (auto *window = qobject_cast<QQuickWindow *>(object)) {
-            m_watermarkWindow = window;
-            window->show();
-            qDebug(dsLoaderLog()) << "AlphaWatermark window shown successfully";
-        } else {
-            qCWarning(dsLoaderLog()) << "AlphaWatermark root object is not a window";
-            delete object;
-        }
-    });
 }
 
 DS_END_NAMESPACE

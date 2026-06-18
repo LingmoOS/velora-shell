@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,12 +17,17 @@ Item {
     property bool hovered: hoverHandler.hovered
     property bool pressed: tapHandler.pressed
     property int cursorShape: Qt.ArrowCursor
-
-    implicitWidth: shellSurface ? shellSurface.width : 10
-    implicitHeight: shellSurface ? shellSurface.height : 10
+    property alias shellSurfaceItem: impl
+    
+    implicitWidth: shellSurface ? shellSurface.width : 16
+    implicitHeight: shellSurface ? shellSurface.height : 16
 
     function takeFocus() {
         impl.takeFocus()
+    }
+
+    function fixPosition() {
+        fixPositionTimer.start()
     }
 
     ShellSurfaceItem {

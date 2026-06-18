@@ -31,9 +31,7 @@ private:
     QMap<QString, QString> groupPlugins(const QStringList &pluginPaths) const;
 
     void startProcess(const QString &loaderPath, const QString &pluginPath, const QString &groupName);
-    void startProcessInternal(const QString &loaderPath, const QString &pluginPath, const QString &groupName);
     void setProcessEnv(QProcess *process);
-    void logFailedPlugin(const QString &pluginPath, const QString &reason = QString());
 
 private:
     struct ProcessInfo {

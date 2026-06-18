@@ -12,7 +12,6 @@ import org.deepin.ds 1.0
 import org.deepin.ds.dock 1.0
 import org.deepin.ds.dock.tray 1.0
 import org.deepin.ds.dock.tray 1.0 as DDT
-import org.deepin.ds.dock 1.0 as DockCore
 
 AppletItem {
     id: tray
@@ -129,57 +128,7 @@ AppletItem {
     Connections {
         target: DockCompositor
         function onPluginSurfacesUpdated() {
-            // === Cache: Native items never change, build once ===
-            if (!tray._cachedNativeItems) {
-                let nativeItems = ["datetime", "power", "shutdown", "network", "sound", "brightness", "bluetooth"]
-                tray._cachedNativeItems = []
-                for (let j = 0; j < nativeItems.length; j++) {
-                    let pluginId = nativeItems[j]
-                    let surfaceId = `native::${pluginId}`
-                    let sectionType, forbiddenSections
-
-                    if (pluginId === "datetime" || pluginId === "power" || pluginId === "shutdown") {
-                        sectionType = "fixed"
-                        forbiddenSections = ["stashed", "collapsable", "pinned"]
-                    } else {
-                        sectionType = "pinned"
-                        forbiddenSections = ["stashed", "fixed"]
-                    }
-
-                    tray._cachedNativeItems.push({
-                        "surfaceId": surfaceId,
-                        "delegateType": "native-tray-item",
-                        "sectionType": sectionType,
-                        "forbiddenSections": forbiddenSections,
-                        "pluginFlags": 0
-                    })
-                }
-            }
-
-            // Build surfacesData from cached native + dynamic app + external
-            let surfacesData = tray._cachedNativeItems.slice()  // Copy cached array
-
-            // === Application tray items (WeChat, QQ, Fcitx, etc. via SNI) ===
-            if (DDT.ApplicationTrayManager) {
-                let appIds = DDT.ApplicationTrayManager.getAppIds()
-                for (let k = 0; k < appIds.length; k++) {
-                    let appSurfaceId = appIds[k]
-                    let appData = DDT.ApplicationTrayManager.getAppData(appSurfaceId)
-                    
-                    surfacesData.push({
-                        "surfaceId": appSurfaceId,
-                        "delegateType": "app-tray-item",
-                        "sectionType": "stashed",  // Default to stashed area
-                        "forbiddenSections": ["fixed"],
-                        "pluginFlags": 0,
-                        "title": appData.title || "",
-                        "iconName": appData.iconName || "",
-                        "status": appData.status || ""
-                    })
-                }
-            }
-
-            // === External tray plugins (if any remain) ===
+            let surfacesData = []
             for (let i = 0; i < DockCompositor.trayPluginSurfaces.count; i++) {
                 let item = DockCompositor.trayPluginSurfaces.get(i).shellSurface
                 if (filterTrayPlugins.indexOf(item.pluginId) >= 0)
@@ -221,42 +170,6 @@ AppletItem {
             } else {
                 console.warn("shutdown applet not found")
             }
-        }
-    }
-
-    // Timer to refresh application tray items (WeChat, QQ may register/unregister dynamically)
-    // NOTE: Disabled polling to prevent memory leak. Using signal-driven updates instead.
-    // The 2-second timer was causing surfacesData to be rebuilt every 2 seconds,
-    // creating ~500 objects/min that triggered model cascading updates.
-    Timer {
-        id: appTrayRefreshTimer
-        interval: 10000  // 10 second fallback (only if signals fail)
-        repeat: true
-        running: false  // DISABLED by default - signal-driven is preferred
-        
-        onTriggered: {
-            if (DDT.ApplicationTrayManager && DDT.ApplicationTrayManager.appCount() > 0) {
-                DockCompositor.pluginSurfacesUpdated()
-            }
-        }
-    }
-
-    // Listen for application tray changes (signal-driven, NO polling)
-    Connections {
-        target: DDT.ApplicationTrayManager
-        function onAppsChanged() {
-            console.log("[AppTray] Apps changed, refreshing...")
-            DockCompositor.pluginSurfacesUpdated()
-        }
-        
-        function onAppRegistered(surfaceId) {
-            console.log("[AppTray] App registered:", surfaceId)
-            DockCompositor.pluginSurfacesUpdated()
-        }
-        
-        function onAppUnregistered(surfaceId) {
-            console.log("[AppTray] App unregistered:", surfaceId)
-            DockCompositor.pluginSurfacesUpdated()
         }
     }
 

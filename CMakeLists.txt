@@ -6,9 +6,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.16)
 
 set(DS_VERSION "1.99.0" CACHE STRING "Define project version")
 project(DDEShell
-    VERSION "2.0.35"
-    DESCRIPTION "velora-shell"
-    HOMEPAGE_URL "https://github.com/LingmoOS/velora-shell"
+    VERSION "${DS_VERSION}"
+    DESCRIPTION "dde-shell"
+    HOMEPAGE_URL "https://github.com/linuxdeepin/dde-shell"
     LANGUAGES CXX C
 )
 
@@ -60,6 +60,15 @@ find_package(Dtk${DTK_VERSION_MAJOR} REQUIRED COMPONENTS Core Gui)
 find_package(ICU 74.2 REQUIRED COMPONENTS uc i18n io)
 find_package(WaylandProtocols REQUIRED)
 find_package(PkgConfig REQUIRED)
+
+# Check if dde-api provides EventLogger (header-only)
+find_package(DDEAPI QUIET)
+if(DDEAPI_FOUND)
+    set(HAVE_DDE_API_EVENTLOGGER ON)
+    message(STATUS "Found DDEAPI: EventLogger available")
+else()
+    message(STATUS "DDEAPI not found, event logging will be disabled")
+endif()
 
 qt_policy(SET QTP0001 NEW)
 

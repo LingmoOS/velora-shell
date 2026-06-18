@@ -15,14 +15,19 @@ PopupWindow {
     property real yOffset: 0
     property int margins: 10
     property Item currentItem
+    property int requestedWidth: 10
+    property int requestedHeight: 10
+    property bool geometryUpdatePending: false
     signal requestUpdateGeometry()
     signal updateGeometryFinished()
 
     // order to update screen and (x,y)
     property var updateGeometryer : function updateGeometry()
     {
-        if (root.width <= 10 || root.height <= 10) {
-            return
+        if (root.requestedWidth <= 10 || root.requestedHeight <= 10) {
+            root.width = root.requestedWidth;
+            root.height = root.requestedHeight;
+            return;
         }
         if (!root.transientParent)
             return
@@ -33,9 +38,11 @@ PopupWindow {
         let bounding = Qt.rect(root.screen.virtualX + margins, root.screen.virtualY + margins,
                                root.screen.width - margins * 2, root.screen.height - margins * 2)
         let pos = Qt.point(transientParent ? transientParent.x + xOffset : xOffset,
-                           transientParent ? transientParent.y + yOffset : YOffset)
-        x = selectValue(pos.x, bounding.left, bounding.right - root.width)
-        y = selectValue(pos.y, bounding.top, bounding.bottom - root.height)
+                           transientParent ? transientParent.y + yOffset : yOffset)
+        let newX = selectValue(pos.x, bounding.left, bounding.right - root.requestedWidth)
+        let newY = selectValue(pos.y, bounding.top, bounding.bottom - root.requestedHeight)
+        
+        root.setWindowGeometry(newX, newY, root.requestedWidth, root.requestedHeight)
     }
 
     function selectValue(value, min, max) {
@@ -84,6 +91,8 @@ PopupWindow {
         if(root.visible)
             return
         currentItem = null
+        root.requestedWidth = 10
+        root.requestedHeight = 10
         root.width = 10
         root.height = 10
         DS.closeChildrenWindows(root)
@@ -117,18 +126,25 @@ PopupWindow {
         }
     }
 
-    onHeightChanged: requestUpdateGeometry()
-    onWidthChanged: requestUpdateGeometry()
+    onRequestedHeightChanged: {
+        requestUpdateGeometry()
+    }
+    onRequestedWidthChanged: {
+        requestUpdateGeometry()
+    }
     onXOffsetChanged: requestUpdateGeometry()
     onYOffsetChanged: requestUpdateGeometry()
 
     onRequestUpdateGeometry: {
-        if (updateGeometryer) {
-            Qt.callLater(function () {
-                updateGeometryer()
-                updateGeometryFinished()
-            })
-        }
+        if (!updateGeometryer || geometryUpdatePending)
+            return
+
+        geometryUpdatePending = true
+        Qt.callLater(function () {
+            geometryUpdatePending = false
+            updateGeometryer()
+            updateGeometryFinished()
+        })
     }
 
     D.StyledBehindWindowBlur {
@@ -146,10 +162,9 @@ PopupWindow {
                                                     Qt.rgba(235 / 255.0, 235 / 255.0, 235 / 255.0, blendColorAlpha(0.6)),
                                                     Qt.rgba(0, 0, 0, blendColorAlpha(85 / 255)))
             }
-            // fix: 毛玻璃不可用时使用半透明回退色，避免显示为不透明灰色方块
             return DStyle.Style.control.selectColor(undefined,
-                                                Qt.rgba(235 / 255.0, 235 / 255.0, 235 / 255.0, 0.92),
-                                                Qt.rgba(30 / 255.0, 30 / 255.0, 30 / 255.0, 0.92))
+                                                DStyle.Style.behindWindowBlur.lightNoBlurColor,
+                                                DStyle.Style.behindWindowBlur.darkNoBlurColor)
         }
     }
 }

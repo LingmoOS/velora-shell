@@ -287,12 +287,6 @@ QStringList *TraySortOrderModel::getSection(const QString &sectionType)
 
 QString TraySortOrderModel::findSection(const QString &surfaceId, const QString &fallback, const QStringList &forbiddenSections, int pluginFlags)
 {
-    // 参数验证
-    if (surfaceId.isEmpty()) {
-        qWarning() << "findSection called with empty surfaceId";
-        return fallback;
-    }
-
     QStringList * found = nullptr;
     QString result(fallback);
 
@@ -310,7 +304,7 @@ QString TraySortOrderModel::findSection(const QString &surfaceId, const QString 
         result = SECTION_FIXED;
     }
 
-    // 设置默认隐藏（仅对新插件）
+    // 设置默认隐藏
     if (!found && // 不在列表中
         !(pluginFlags & Dock::Attribute_ForceDock) && // 非 forceDock
         (pluginFlags & Dock::Attribute_CanSetting) && // 可以在控制中心设置
@@ -319,23 +313,14 @@ QString TraySortOrderModel::findSection(const QString &surfaceId, const QString 
         !surfaceId.startsWith("application-tray::") // 非托盘图标
     ) {
         if (!m_hiddenIds.contains(surfaceId)) {
-            qDebug() << "Hiding new plugin by default:" << surfaceId;
             m_hiddenIds.append(surfaceId);
             handlePluginVisibleChanged(surfaceId, false);
         }
     }
 
-    // 检查禁止的 section
     if (forbiddenSections.contains(result)) {
-        // 使用 qWarning 代替 Q_ASSERT，避免 release 版本崩溃
-        if (result == fallback) {
-            qCritical() << "Fallback section is in forbidden list for:" << surfaceId 
-                       << "fallback:" << fallback << "forbidden:" << forbiddenSections;
-            return fallback;  // 返回 fallback 而不是崩溃
-        }
-        
+        Q_ASSERT(result != fallback);
         if (found) {
-            qDebug() << "Moving" << surfaceId << "from" << result << "to fallback:" << fallback;
             found->removeOne(surfaceId);
             result = fallback;
         }
@@ -366,47 +351,17 @@ QStandardItem *TraySortOrderModel::createTrayItem(const QString &name,
                                                   const QStringList &forbiddenSections,
                                                   int pluginFlags)
 {
-    // 参数验证
-    if (name.isEmpty()) {
-        qWarning() << "createTrayItem called with empty name, skipping";
-        return nullptr;
-    }
-
-    // 确定实际 section 类型
-    QString actualSectionType;
-    if (sectionType.isEmpty()) {
-        qWarning() << "createTrayItem called with empty sectionType for:" << name;
-        actualSectionType = SECTION_TRAY_ACTION;
-    } else {
-        actualSectionType = findSection(name, sectionType, forbiddenSections, pluginFlags);
-        if (actualSectionType.isEmpty()) {
-            qWarning() << "findSection returned empty for:" << name << ", using fallback:" << sectionType;
-            actualSectionType = sectionType;
-        }
-    }
-
+    QString actualSectionType = findSection(name, sectionType, forbiddenSections, pluginFlags);
     registerToSection(name, actualSectionType);
+
     qDebug() << actualSectionType << name << delegateType;
 
-    // 安全创建 QStandardItem
-    QStandardItem *item = nullptr;
-    try {
-        item = new QStandardItem(name);
-        if (!item) {
-            qCritical() << "Failed to allocate QStandardItem for:" << name;
-            return nullptr;
-        }
-    } catch (const std::exception &e) {
-        qCritical() << "Exception creating QStandardItem for:" << name << "-" << e.what();
-        return nullptr;
-    }
-
+    QStandardItem * item = new QStandardItem(name);
     item->setData(name, TraySortOrderModel::SurfaceIdRole);
     item->setData(true, TraySortOrderModel::VisibilityRole);
     item->setData(true, TraySortOrderModel::DockVisibleRole);
     item->setData(actualSectionType, TraySortOrderModel::SectionTypeRole);
-    item->setData(delegateType.isEmpty() ? "ActionLegacy" : delegateType,
-                 TraySortOrderModel::DelegateTypeRole);
+    item->setData(delegateType, TraySortOrderModel::DelegateTypeRole);
     item->setData(forbiddenSections, TraySortOrderModel::ForbiddenSectionsRole);
     item->setData(-1, TraySortOrderModel::VisualIndexRole);
     item->setData(pluginFlags, TraySortOrderModel::PluginFlagsRole);

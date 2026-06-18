@@ -40,13 +40,10 @@ AppletItemButton {
     contentItem: Item {
         id: pluginItem
         property var plugin: DockCompositor.findSurface(model.surfaceId)
-        // 安全的空值检查，确保不会返回 null 导致崩溃
-        property bool isValidPlugin: plugin !== null && plugin !== undefined
-        implicitHeight: isValidPlugin ? plugin.height : (isHorizontal ? DDT.TrayItemPositionManager.dockHeight : itemHeight)
-        implicitWidth: isValidPlugin ? plugin.width : (!isHorizontal ? DDT.TrayItemPositionManager.dockHeight : itemWidth)
+        implicitHeight: plugin ? plugin.height : 0
+        implicitWidth: plugin ? plugin.width : 0
 
         property var itemGlobalPoint: {
-            if (!isValidPlugin) return Qt.point(0, 0)
             var a = pluginItem
             var x = 0, y = 0
             while(a.parent) {
@@ -59,7 +56,6 @@ AppletItemButton {
         }
         
         property var itemGlobalPos: {
-            if (!isValidPlugin) return Qt.point(0, 0)
             var a = pluginItem
             var x = 0, y = 0
 
@@ -79,39 +75,25 @@ AppletItemButton {
 
         HoverHandler {
             id: hoverHandler
-            parent: surfaceItem
-            enabled: pluginItem.isValidPlugin
+            parent: surfaceItem.shellSurfaceItem
         }
         TapHandler {
             id: tapHandler
-            parent: surfaceItem
-            enabled: pluginItem.isValidPlugin
+            parent: surfaceItem.shellSurfaceItem
         }
 
-        ShellSurfaceItem {
+        DDT.ShellSurfaceItemProxy {
             id: surfaceItem
             anchors.fill: parent
-            shellSurface: pluginItem.isValidPlugin ? pluginItem.plugin : null
-            smooth: false
-            visible: pluginItem.isValidPlugin
+            shellSurface: pluginItem.plugin
         }
 
         Component.onCompleted: {
-            try {
-                if (!pluginItem.isValidPlugin || !itemVisible)
-                    return
-                updatePluginMargins()
-                
-                // 安全调用，防止 plugin 对象方法不存在或抛出异常
-                if (pluginItem.plugin && typeof pluginItem.plugin.updatePluginGeometry === 'function') {
-                    pluginItem.plugin.updatePluginGeometry(Qt.rect(pluginItem.itemGlobalPoint.x, pluginItem.itemGlobalPoint.y, 0, 0))
-                }
-                if (pluginItem.plugin && typeof pluginItem.plugin.setGlobalPos === 'function') {
-                    pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
-                }
-            } catch (e) {
-                console.warn("Error in ActionLegacyTrayPluginDelegate.onCompleted:", e.message)
-            }
+            if (!pluginItem.plugin || !itemVisible)
+                return
+            updatePluginMargins()
+            pluginItem.plugin.updatePluginGeometry(Qt.rect(pluginItem.itemGlobalPoint.x, pluginItem.itemGlobalPoint.y, 0, 0))
+            pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
         }
 
         Timer {
@@ -120,21 +102,11 @@ AppletItemButton {
             running: false
             repeat: false
             onTriggered: {
-                try {
-                    if (!pluginItem.isValidPlugin || !itemVisible)
-                        return
-                    updatePluginMargins()
-                    
-                    // 安全调用，带边界检查
-                    if (pluginItem.itemGlobalPoint && 
-                        pluginItem.itemGlobalPoint.x >= 0 && 
-                        pluginItem.itemGlobalPoint.y >= 0 &&
-                        pluginItem.plugin &&
-                        typeof pluginItem.plugin.updatePluginGeometry === 'function') {
-                        pluginItem.plugin.updatePluginGeometry(Qt.rect(pluginItem.itemGlobalPoint.x, pluginItem.itemGlobalPoint.y, 0, 0))
-                    }
-                } catch (e) {
-                    console.warn("Error in updatePluginItemGeometryTimer:", e.message)
+                if (!pluginItem.plugin || !itemVisible)
+                    return
+                updatePluginMargins()
+                if (pluginItem.itemGlobalPoint.x >= 0 && pluginItem.itemGlobalPoint.y >= 0) {
+                    pluginItem.plugin.updatePluginGeometry(Qt.rect(pluginItem.itemGlobalPoint.x, pluginItem.itemGlobalPoint.y, 0, 0))
                 }
             }
         }
@@ -145,17 +117,9 @@ AppletItemButton {
             running: false
             repeat: false
             onTriggered: {
-                try {
-                    if (!pluginItem.isValidPlugin || !itemVisible)
-                        return
-                    
-                    // 安全调用
-                    if (pluginItem.plugin && typeof pluginItem.plugin.setGlobalPos === 'function') {
-                        pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
-                    }
-                } catch (e) {
-                    console.warn("Error in updatePluginItemPosTimer:", e.message)
-                }
+                if (!pluginItem.plugin || !itemVisible)
+                    return
+                pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
             }
         }
 
@@ -165,25 +129,18 @@ AppletItemButton {
 
         onItemGlobalPosChanged: {
             updatePluginItemPosTimer.start()
+            surfaceItem.fixPosition()
         }
 
         onVisibleChanged: {
-            try {
-                if (!pluginItem.isValidPlugin || !itemVisible)
-                    return
-                updatePluginMargins()
-                
-                // 安全调用
-                if (pluginItem.plugin && typeof pluginItem.plugin.setGlobalPos === 'function') {
-                    pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
-                }
-            } catch (e) {
-                console.warn("Error in onVisibleChanged:", e.message)
-            }
+            if (!pluginItem.plugin || !itemVisible)
+                return
+            updatePluginMargins()
+            pluginItem.plugin.setGlobalPos(pluginItem.itemGlobalPos)
         }
     }
 
-    D.ColorSelector.hovered: root.inputEventsEnabled && (pluginItem.isValidPlugin && pluginItem.plugin.isItemActive || hoverHandler.hovered)
+    D.ColorSelector.hovered: root.inputEventsEnabled && (pluginItem.plugin && pluginItem.plugin.isItemActive || hoverHandler.hovered)
     D.ColorSelector.pressed: tapHandler.pressed
 
     property Component overlayWindow: QuickDragWindow {
@@ -193,7 +150,7 @@ AppletItemButton {
         Loader {
             height: parent.height
             width: parent.width
-            active: root.DQuickDrag.isDragging && pluginItem.isValidPlugin
+            active: root.DQuickDrag.isDragging
             sourceComponent: ShellSurfaceItem {
                 anchors.centerIn: parent
                 shellSurface: pluginItem.plugin
@@ -217,11 +174,9 @@ AppletItemButton {
         }
 
         if (Qt.platform.pluginName !== "xcb") {
-            if (pluginItem.isValidPlugin) {
-                root.grabToImage(function(result) {
-                    root.Drag.imageSource = result.url;
-                })
-            }
+            root.grabToImage(function(result) {
+                root.Drag.imageSource = result.url;
+            })
         }
 
         if (!Drag.active) {
@@ -234,7 +189,7 @@ AppletItemButton {
     }
 
     onWidthChanged: {
-        if (Qt.platform.pluginName !== "xcb" && pluginItem.isValidPlugin) {
+        if (Qt.platform.pluginName !== "xcb") {
             root.grabToImage(function(result) {
                 root.Drag.imageSource = result.url;
             })

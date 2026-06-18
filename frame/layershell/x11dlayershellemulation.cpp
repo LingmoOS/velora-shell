@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -17,6 +17,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_ewmh.h>
 #include <xcb/xcb_icccm.h>
+#include <xcb/shape.h>
 
 DS_BEGIN_NAMESPACE
 
@@ -33,6 +34,7 @@ LayerShellEmulation::LayerShellEmulation(QWindow* window, QObject *parent)
     onPositionChanged();
     connect(m_dlayerShellWindow, &DLayerShellWindow::anchorsChanged, this, &LayerShellEmulation::onPositionChanged);
     connect(m_dlayerShellWindow, &DLayerShellWindow::marginsChanged, this, &LayerShellEmulation::onPositionChanged);
+    connect(m_dlayerShellWindow, &DLayerShellWindow::geometryHintsChanged, this, &LayerShellEmulation::onPositionChanged);
 
     onExclusionZoneChanged();
     m_exclusionZoneChangedTimer.setSingleShot(true);
@@ -69,6 +71,9 @@ LayerShellEmulation::LayerShellEmulation(QWindow* window, QObject *parent)
 
     onScopeChanged();
     connect(m_dlayerShellWindow, &DLayerShellWindow::scopeChanged, this, &LayerShellEmulation::onScopeChanged);
+
+    onInputRegionChanged();
+    connect(m_dlayerShellWindow, &DLayerShellWindow::inputRegionChanged, this, &LayerShellEmulation::onInputRegionChanged);
 
     // connect(m_dlayerShellWindow, &DS_NAMESPACE::DLayerShellWindow::keyboardInteractivityChanged, this, &LayerShellEmulation::onKeyboardInteractivityChanged);
 }
@@ -117,17 +122,30 @@ void LayerShellEmulation::onPositionChanged()
 {
     auto anchors = m_dlayerShellWindow->anchors();
     auto screen = m_window->screen();
+    if (!screen) {
+        return;
+    }
+
+    int targetWidth = m_window->width();
+    int targetHeight = m_window->height();
+    if (m_dlayerShellWindow->preferredWidth() > 0) {
+        targetWidth = m_dlayerShellWindow->preferredWidth();
+    }
+    if (m_dlayerShellWindow->preferredHeight() > 0) {
+        targetHeight = m_dlayerShellWindow->preferredHeight();
+    }
+
     auto screenRect = screen->geometry();
-    auto x = screenRect.left() + (screenRect.width() - m_window->width()) / 2;
-    auto y = screenRect.top() + (screenRect.height() - m_window->height()) / 2;
+    auto x = screenRect.left() + (screenRect.width() - targetWidth) / 2;
+    auto y = screenRect.top() + (screenRect.height() - targetHeight) / 2;
     if (anchors & DLayerShellWindow::AnchorRight) {
         // https://doc.qt.io/qt-6/qrect.html#right
-        x = (screen->geometry().right() + 1 - m_window->width() - m_dlayerShellWindow->rightMargin());
+        x = (screen->geometry().right() + 1 - targetWidth - m_dlayerShellWindow->rightMargin());
     }
 
     if (anchors & DLayerShellWindow::AnchorBottom) {
         // https://doc.qt.io/qt-6/qrect.html#bottom
-        y = (screen->geometry().bottom() + 1 - m_window->height() - m_dlayerShellWindow->bottomMargin());
+        y = (screen->geometry().bottom() + 1 - targetHeight - m_dlayerShellWindow->bottomMargin());
     }
     if (anchors & DLayerShellWindow::AnchorLeft) {
         x = (screen->geometry().left() + m_dlayerShellWindow->leftMargin());
@@ -136,7 +154,7 @@ void LayerShellEmulation::onPositionChanged()
         y = (screen->geometry().top() + m_dlayerShellWindow->topMargin());
     }
 
-    QRect rect(x, y, m_window->width(), m_window->height());
+    QRect rect(x, y, targetWidth, targetHeight);
 
     const bool horizontallyConstrained = anchors.testFlags({DLayerShellWindow::AnchorLeft, DLayerShellWindow::AnchorRight});
     const bool verticallyConstrained = anchors.testFlags({DLayerShellWindow::AnchorTop, DLayerShellWindow::AnchorBottom});
@@ -150,7 +168,9 @@ void LayerShellEmulation::onPositionChanged()
         rect.setHeight(screen->geometry().height() - m_dlayerShellWindow->topMargin() - m_dlayerShellWindow->bottomMargin());
     }
 
-    m_window->setGeometry(rect);
+    if (m_window->geometry() != rect) {
+        m_window->setGeometry(rect);
+    }
 }
 
 /**
@@ -303,6 +323,41 @@ void LayerShellEmulation::onScopeChanged()
     xcb_icccm_set_wm_class(x11Application->connection(), m_window->winId(), wmClassData.length(), wmClassData.constData());
 
     qCDebug(layershell) << "Set WM_CLASS for window" << m_window->winId() << " wm_class:" << wmClassData;
+}
+
+void LayerShellEmulation::onInputRegionChanged()
+{
+    auto *x11Application = qGuiApp->nativeInterface<QNativeInterface::QX11Application>();
+    if (!x11Application || !m_window->winId() || !m_dlayerShellWindow) {
+        return;
+    }
+
+    if (m_dlayerShellWindow->inputRegion().isNull()) {
+        // Reset input region (no shape constraint)
+        xcb_shape_mask(x11Application->connection(), XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT, m_window->winId(), 0, 0, XCB_NONE);
+        xcb_flush(x11Application->connection());
+        return;
+    }
+
+    QRegion region = m_dlayerShellWindow->inputRegion();
+    qreal scaleFactor = qGuiApp->devicePixelRatio();
+
+    QVector<xcb_rectangle_t> rects;
+    for (const QRect &r : region) {
+        xcb_rectangle_t rect;
+        rect.x = r.x() * scaleFactor;
+        rect.y = r.y() * scaleFactor;
+        rect.width = r.width() * scaleFactor;
+        rect.height = r.height() * scaleFactor;
+        rects.append(rect);
+    }
+
+    // Set the input shape via XCB
+    // If rects vector is empty, the window will become completely transparent to input clicks (unclickable)
+    xcb_shape_rectangles(x11Application->connection(), XCB_SHAPE_SO_SET, XCB_SHAPE_SK_INPUT,
+                         XCB_CLIP_ORDERING_UNSORTED, m_window->winId(), 0, 0,
+                         rects.size(), rects.data());
+    xcb_flush(x11Application->connection());
 }
 
 // void X11Emulation::onKeyboardInteractivityChanged()

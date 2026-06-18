@@ -203,9 +203,6 @@ int main(int argc, char *argv[])
     shell.disableQmlCache();
     shell.setFlickableWheelDeceleration(6000);
 
-    // Show Alpha build watermark if applicable (only during Alpha stage)
-    shell.showAlphaWatermark();
-
     AppletManager manager(pluginIds);
     if (parser.isSet(sceneviewOption))
         manager.enableSceneview();

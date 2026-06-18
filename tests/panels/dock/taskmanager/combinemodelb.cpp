@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -41,6 +41,12 @@ TestModelB::TestModelB(QObject *parent)
     : QAbstractListModel(parent)
 {
 
+}
+
+TestModelB::~TestModelB()
+{
+    qDeleteAll(m_list);
+    m_list.clear();
 }
 
 QHash<int, QByteArray> TestModelB::roleNames() const

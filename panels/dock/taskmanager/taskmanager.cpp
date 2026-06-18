@@ -22,6 +22,10 @@
 #include "textcalculator.h"
 #include "treelandwindowmonitor.h"
 
+#ifdef HAVE_DDE_API_EVENTLOGGER
+#include <dde-api/eventlogger.hpp>
+#endif
+
 #include <QGuiApplication>
 #include <QProcess>
 #include <QStandardPaths>
@@ -147,6 +151,7 @@ TaskManager::TaskManager(QObject *parent)
     qmlRegisterUncreatableType<TextCalculatorAttached>("org.deepin.ds.dock.taskmanager", 1, 0, "TextCalculatorAttached", "TextCalculator Attached");
 
     connect(Settings, &TaskManagerSettings::allowedForceQuitChanged, this, &TaskManager::allowedForceQuitChanged);
+    connect(Settings, &TaskManagerSettings::showAttentionAnimationChanged, this, &TaskManager::showAttentionAnimationChanged);
     connect(Settings, &TaskManagerSettings::windowSplitChanged, this, &TaskManager::windowSplitChanged);
 }
 
@@ -169,6 +174,8 @@ bool TaskManager::load()
 
 bool TaskManager::init()
 {
+    Settings->logMergeAppModel(!Settings->isWindowSplit());
+
     auto adaptor = new TaskManagerAdaptor(this);
     Q_UNUSED(adaptor)
     QDBusConnection::sessionBus().registerService("org.deepin.ds.Dock.TaskManager");
@@ -320,8 +327,11 @@ void TaskManager::handleWindowAdded(QPointer<AbstractWindow> window)
 
     // TODO: remove below code and use use model replaced.
     QModelIndexList res;
-    if (m_activeAppModel) {
-        res = m_activeAppModel->match(m_activeAppModel->index(0, 0), TaskManager::WinIdRole, window->id());
+    if (m_activeAppModel && m_activeAppModel->rowCount() > 0) {
+        auto startIndex = m_activeAppModel->index(0, 0);
+        if (startIndex.isValid()) {
+            res = m_activeAppModel->match(startIndex, TaskManager::WinIdRole, window->id());
+        }
     }
 
     QSharedPointer<DesktopfileAbstractParser> desktopfile = nullptr;
@@ -377,6 +387,11 @@ void TaskManager::hideItemPreview()
 bool TaskManager::allowForceQuit()
 {
     return Settings->isAllowedForceQuit();
+}
+
+bool TaskManager::showAttentionAnimation()
+{
+    return Settings->showAttentionAnimation();
 }
 
 QString TaskManager::desktopIdToAppId(const QString& desktopId)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2024 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -25,6 +25,12 @@ Control {
     property Palette textColor: DockPalette.iconTextPalette
     palette.windowText: ColorSelector.textColor
 
+    onIsOpenedChanged: {
+        if (root.isOpened) {
+            toolTip.close()
+        }
+    }
+
     PanelToolTip {
         id: toolTip
         text: qsTr("Quick actions")
@@ -32,13 +38,14 @@ Control {
         toolTipY: DockPanelPositioner.y
     }
 
-    contentItem: Grid {
-        rows: root.useColumnLayout ? 2 : 1
-        spacing: 0
-        padding: 0
+    contentItem: GridLayout {
+        flow: root.useColumnLayout ? GridLayout.TopToBottom : GridLayout.LeftToRight
+        rowSpacing: 0
+        columnSpacing: 0
 
         Loader {
             id: placeholder
+            Layout.alignment: Qt.AlignCenter
             active: root.shellSurface
             visible: active
             sourceComponent: TrayItemSurface {
@@ -50,16 +57,16 @@ Control {
         }
         Control {
             id: quickpanelPlaceholder
-            width: placeholder.active ? placeholder.width : 16 + itemMargins
-            height: placeholder.active ? placeholder.height : 16 + itemMargins
+            Layout.alignment: Qt.AlignCenter
+            padding: itemMargins
             contentItem: DciIcon {
                 sourceSize: Qt.size(16, 16)
                 name: "dock-control-panel"
                 palette: DTK.makeIconPalette(root.palette)
                 theme: root.ColorSelector.controlTheme
+                smooth: false
             }
             HoverHandler {
-                enabled: !root.isOpened
                 onHoveredChanged: function () {
                     root.contentHovered = hovered
                     if (hovered && !root.isOpened) {

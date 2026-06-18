@@ -91,7 +91,7 @@ LQM.DelegateChooser {
                     {
                         if (surfaceId !== model.surfaceId)
                             return
-                        // `trayDelegate.height / 2` is set in velora-tray-loader
+                        // `trayDelegate.height / 2` is set in dde-tray-loader
                         stashedSurfacePopup.toolTipVOffset = Qt.binding(function () {
                             return itemPadding + trayDelegate.height / 2
                         })

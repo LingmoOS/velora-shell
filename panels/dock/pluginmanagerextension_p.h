@@ -113,9 +113,6 @@ private:
     QString popupMinHeightMsg() const;
     using PluginSurfaceCallback = std::function<void(Resource *)>;
     void foreachPluginSurface(PluginSurfaceCallback callback);
-    void createPluginInternal(Resource *resource, const QString &pluginId, const QString &itemKey,
-                              const QString &display_name, int32_t plugin_flags, int32_t type,
-                              int32_t size_policy, struct ::wl_resource *surface, uint32_t id);
 
 private:
     QList<PluginSurface*> m_pluginSurfaces;

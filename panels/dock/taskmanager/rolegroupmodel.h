@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2025 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -12,6 +12,7 @@ class RoleGroupModel : public QAbstractProxyModel
 
 public:
     explicit RoleGroupModel(QAbstractItemModel *sourceModel, int role, QObject *parent = nullptr);
+    ~RoleGroupModel() override;
     void setSourceModel(QAbstractItemModel *sourceModel) override;
 
     void setDeduplicationRole(const int &role);

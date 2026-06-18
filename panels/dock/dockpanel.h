@@ -14,8 +14,6 @@
 namespace dock {
 class DockHelper;
 class LoadTrayPlugins;
-class NativeTrayItems;
-class ApplicationTrayManager;
 
 class DockPanel : public DS_NAMESPACE::DPanel, public QDBusContext
 {
@@ -143,8 +141,6 @@ private:
     DockHelper* m_helper;
     QPointer<QScreen> m_dockScreen;
     LoadTrayPlugins *m_loadTrayPlugins;
-    NativeTrayItems *m_nativeTrayItems;
-    ApplicationTrayManager *m_appTrayManager;
     bool m_compositorReady;
     bool m_launcherShown;
     bool m_contextDragging;

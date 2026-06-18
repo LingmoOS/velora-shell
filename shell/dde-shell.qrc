@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/shell">
         <file>SceneWindow.qml</file>
-        <file>AlphaWatermark.qml</file>
     </qresource>
 </RCC>

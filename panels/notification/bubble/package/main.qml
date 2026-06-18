@@ -69,7 +69,7 @@ Window {
 
     visible: Applet.visible
     width: 390
-    height: Math.max(10, bubbleView.height + bubbleView.anchors.topMargin + bubbleView.anchors.bottomMargin)
+    height: root.screen.height
     DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
     DLayerShellWindow.anchors: DLayerShellWindow.AnchorBottom | DLayerShellWindow.AnchorRight
     DLayerShellWindow.topMargin: windowMargin(0)
@@ -96,10 +96,21 @@ Window {
         anchors {
             right: parent.right
             bottom: parent.bottom
-            bottomMargin: 10
             rightMargin: 10
-            margins: 30
+            bottomMargin: 10
         }
+
+        function updateInputRegion() {
+            root.DLayerShellWindow.setInputRegionRect(
+                Math.ceil(bubbleView.x),
+                Math.ceil(bubbleView.y),
+                Math.ceil(bubbleView.width), 
+                Math.ceil(Math.max(10, bubbleView.contentHeight))
+            )
+        }
+        onContentHeightChanged: updateInputRegion()
+        onHeightChanged: updateInputRegion()
+        onYChanged: updateInputRegion()
 
         spacing: 10
         model: Applet.bubbles
@@ -107,30 +118,56 @@ Window {
         verticalLayoutDirection: ListView.BottomToTop
         add: Transition {
             id: addTrans
-            // Before starting the new animation, forcibly complete the previous notification bubble's animation
-            ScriptAction {
-                script: {
-                    // Only handle the previous notification bubble (at index count - 1); no need to iterate through all of them
-                    if (bubbleView.count > 1) {
-                        let prevItem = bubbleView.itemAtIndex(bubbleView.count - 2)
-                        if (prevItem) {
-                            // Directly set x to 0 to forcibly complete the animation
-                            prevItem.x = 0
-                        }
-                    }
-                }
-            }
-            XAnimator { 
+            PropertyAnimation {
                 target: addTrans.ViewTransition.item
+                properties: "x"
                 from: addTrans.ViewTransition.item.width
                 to: 0
                 duration: 600
                 easing.type: Easing.OutExpo
             }
         }
-        delegate: Bubble {
-            width: 360
-            bubble: model
+
+        addDisplaced: Transition {
+            id: addDisplacedTrans
+            PropertyAnimation {
+                target: addDisplacedTrans.ViewTransition.item
+                properties: "x"
+                to: 0
+                duration: 600
+                easing.type: Easing.OutExpo
+            }
+            PropertyAnimation {
+                target: addDisplacedTrans.ViewTransition.item
+                properties: "y"
+                duration: 600
+                easing.type: Easing.OutExpo
+            }
+        }
+
+        remove: Transition {
+            id: removeTrans
+            ParallelAnimation {
+                PropertyAnimation {
+                    target: removeTrans.ViewTransition.item
+                    property: "opacity"
+                    to: 0
+                    duration: 400
+                    easing.type: Easing.OutCubic
+                }
+            }
+        }
+
+        removeDisplaced: Transition {
+            PropertyAnimation {
+                properties: "opacity,y"
+                duration: 400
+                easing.type: Easing.OutExpo
+            }
+        }
+
+        delegate: BubbleDelegate {
+            maxCount: model.bubbleCount
         }
 
         HoverHandler {

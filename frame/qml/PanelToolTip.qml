@@ -18,6 +18,7 @@ Item {
     property int toolTipX: 0
     property int toolTipY: 0
     property bool readyBinding: false
+    property bool openPending: false
     // WM_NAME, used for kwin.
     property string windowTitle: "dde-shell/paneltooltip"
     width: toolTip.width
@@ -25,23 +26,21 @@ Item {
 
     Binding {
         when: readyBinding
-        target: toolTipWindow; property: "width"
+        target: toolTipWindow; property: "requestedWidth"
         value: toolTip.width + toolTip.leftPadding + toolTip.rightPadding
     }
     Binding {
         when: readyBinding
-        target: toolTipWindow; property: "height"
+        target: toolTipWindow; property: "requestedHeight"
         value: toolTip.height
     }
     Binding {
         when: readyBinding
-        delayed: true
         target: toolTipWindow; property: "xOffset"
         value: control.toolTipX - (toolTip.leftPadding + toolTip.rightPadding) / 2
     }
     Binding {
         when: readyBinding
-        delayed: true
         target: toolTipWindow; property: "yOffset"
         value: control.toolTipY
     }
@@ -51,8 +50,14 @@ Item {
         if (!toolTipWindow)
             return
 
-        // fix: 空文本时不显示 tooltip，避免显示灰色空白方块
-        if (!text || text.trim() === "") {
+        if (toolTipWindow.visible) {
+            toolTipWindow.close()
+            toolTipWindow.currentItem = null
+            Qt.callLater(function () {
+                if (!toolTip.visible) {
+                    control.open()
+                }
+            })
             return
         }
 
@@ -61,26 +66,18 @@ Item {
         })
 
         toolTipWindow.currentItem = control
-        timer.start()
-    }
-
-    Timer {
-        id: timer
-        interval: 10
-        onTriggered: {
-            if (!toolTipWindow)
+        openPending = true
+        Qt.callLater(function () {
+            if (!toolTipWindow || !openPending || !readyBinding || toolTipWindow.currentItem !== control)
                 return
 
-            if (!readyBinding)
-                return
-
-            toolTipWindow.title = windowTitle
-            toolTipWindow.show()
-        }
+            toolTipWindow.requestUpdateGeometry()
+        })
     }
-    
+
     function close()
     {
+        openPending = false
         if (!toolTipWindow)
             return
 
@@ -90,9 +87,28 @@ Item {
         toolTipWindow.close()
         toolTipWindow.currentItem = null
     }
+
     function hide()
     {
         close()
+    }
+
+    function finalizeOpen()
+    {
+        if (!toolTipWindow || !openPending || !readyBinding || toolTipWindow.currentItem !== control)
+            return
+
+        openPending = false
+        toolTipWindow.title = windowTitle
+        toolTipWindow.show()
+    }
+
+    Connections {
+        target: toolTipWindow
+        function onUpdateGeometryFinished()
+        {
+            control.finalizeOpen()
+        }
     }
 
     Control {

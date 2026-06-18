@@ -9,16 +9,8 @@ pkg_check_modules(WaylandClient REQUIRED IMPORTED_TARGET wayland-client)
 
 if (NOT DEFINED SYSTEMD_USER_UNIT_DIR)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(Systemd QUIET libsystemd)
-    if (Systemd_FOUND)
-        pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
-        if (NOT SYSTEMD_USER_UNIT_DIR)
-            set(SYSTEMD_USER_UNIT_DIR "${CMAKE_INSTALL_PREFIX}/lib/systemd/user")
-        endif()
-    else()
-        pkg_check_modules(Systemd REQUIRED systemd)
-        pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
-    endif()
+    pkg_check_modules(Systemd REQUIRED systemd)
+    pkg_get_variable(SYSTEMD_USER_UNIT_DIR systemd systemduserunitdir)
 endif()
 
 add_executable(dde-shell
@@ -33,14 +25,6 @@ add_executable(dde-shell
     override_dtkdeclarative_qml.qrc
 )
 
-# AlphaWatermark translations
-file(GLOB ALPHAWATERMARK_TRANSLATIONS translations/*.ts)
-qt_add_lupdate(dde-shell TS_FILES ${ALPHAWATERMARK_TRANSLATIONS})
-qt_add_lrelease(dde-shell TS_FILES ${ALPHAWATERMARK_TRANSLATIONS} QM_FILES_OUTPUT_VARIABLE ALPHAWATERMARK_QMS)
-
-install(FILES ${ALPHAWATERMARK_QMS}
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/dde-shell/translations)
-
 qt_generate_wayland_protocol_client_sources(dde-shell
     FILES
         ${TREELAND_PROTOCOLS_DATA_DIR}/treeland-output-manager-v1.xml
@@ -49,7 +33,6 @@ qt_generate_wayland_protocol_client_sources(dde-shell
 target_compile_definitions(dde-shell
 PRIVATE
     DS_VERSION=${CMAKE_PROJECT_VERSION}
-    DATADIR="${CMAKE_INSTALL_DATADIR}"
 )
 
 target_link_libraries(dde-shell PRIVATE

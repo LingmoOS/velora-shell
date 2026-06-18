@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -16,8 +16,6 @@
 #include "dockfrontadaptor.h"
 #include "dockdaemonadaptor.h"
 #include "loadtrayplugins.h"
-#include "nativetrayitems.h"
-#include "applicationtraymanager.h"
 
 #include <DDBusSender>
 #include <QQuickWindow>
@@ -25,6 +23,10 @@
 #include <QGuiApplication>
 #include <QQuickItem>
 #include <DGuiApplicationHelper>
+
+#ifdef HAVE_DDE_API_EVENTLOGGER
+#include <dde-api/eventlogger.hpp>
+#endif
 
 #define SETTINGS DockSettings::instance()
 
@@ -37,9 +39,7 @@ DockPanel::DockPanel(QObject *parent)
     , m_theme(ColorTheme::Dark)
     , m_hideState(Show)
     , m_dockScreen(nullptr)
-    , m_loadTrayPlugins(nullptr)  // Disabled: use native built-in items instead
-    , m_nativeTrayItems(new NativeTrayItems(this))
-    , m_appTrayManager(new ApplicationTrayManager(this))
+    , m_loadTrayPlugins(new LoadTrayPlugins(this))
     , m_compositorReady(false)
     , m_launcherShown(false)
     , m_contextDragging(false)
@@ -47,16 +47,7 @@ DockPanel::DockPanel(QObject *parent)
 {
     connect(this, &DockPanel::compositorReadyChanged, this, [this] {
         if (!m_compositorReady) return;
-        // Use native built-in tray items instead of external plugin processes
-        qDebug(dockLog) << "Initializing native tray items...";
-        m_nativeTrayItems->initialize();
-        
-        // Initialize SNI-based application tray manager (WeChat, QQ, Fcitx, etc.)
-        qDebug(dockLog) << "Initializing application tray manager...";
-        m_appTrayManager->initialize();
-        
-        // Note: External plugin loading (LoadTrayPlugins) has been disabled
-        // to eliminate IPC overhead, crash issues, and .so dependency problems.
+        m_loadTrayPlugins->loadDockPlugins();
     });
 }
 
@@ -157,6 +148,10 @@ bool DockPanel::init()
                 updateDockScreen();
             else {
                 m_dockScreen = window()->screen();
+            }
+            // 监听屏幕几何信息变化，当主屏位置变化时重新计算 frontendWindowRect
+            if (auto screen = window()->screen()) {
+                connect(screen, &QScreen::geometryChanged, this, &DockPanel::onWindowGeometryChanged);
             }
             rootObject()->installEventFilter(this);
             Q_EMIT devicePixelRatioChanged(window()->devicePixelRatio());

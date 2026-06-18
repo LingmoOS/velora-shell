@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2025 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -11,6 +11,11 @@ RoleGroupModel::RoleGroupModel(QAbstractItemModel *sourceModel, int role, QObjec
     , m_roleForDeduplication(role)
 {
     RoleGroupModel::setSourceModel(sourceModel);
+}
+
+RoleGroupModel::~RoleGroupModel()
+{
+    qDeleteAll(m_map);
 }
 
 void RoleGroupModel::setDeduplicationRole(const int &role)

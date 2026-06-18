@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+# SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 #
 # SPDX-License-Identifier: CC0-1.0
 
@@ -22,19 +22,11 @@ qt_add_qml_module(dock-tray
         trayitempositionmanager.h
         ksortfilterproxymodel.cpp
         ksortfilterproxymodel.h
-        ../nativetrayitems.cpp
-        ../nativetrayitems.h
-        ../applicationtraymanager.cpp
-        ../applicationtraymanager.h
     QML_FILES
         SurfacePopup.qml
         SurfaceSubPopup.qml
         TrayItemSurfacePopup.qml
         ShellSurfaceItemProxy.qml
-        package/NativeTrayItemDelegate.qml
-        package/AppTrayItemDelegate.qml
-        package/TrayItemDelegateChooser.qml
-        package/TrayContainer.qml
 
     OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/tray/
 )
@@ -45,18 +37,11 @@ target_link_libraries(dock-tray PUBLIC
     Dtk${DTK_VERSION_MAJOR}::Core
 )
 
-# Add parent directory to include path for nativetrayitems.h and applicationtraymanager.h
-target_include_directories(dock-tray PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../"
-)
-
 add_library(trayitem SHARED
     trayitem.cpp
     trayitem.h
     traysettings.cpp
     traysettings.h
-    ../dockiteminfo.cpp
-    ../dockiteminfo.h
     ../constants.h
 )
 
@@ -67,6 +52,7 @@ target_include_directories(trayitem PUBLIC
 
 target_link_libraries(trayitem PRIVATE
     dde-shell-frame
+    dde-shell-dock
 )
 
 install(TARGETS dock-tray DESTINATION "${QML_INSTALL_DIR}/org/deepin/ds/dock/tray/")

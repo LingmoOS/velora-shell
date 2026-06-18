@@ -1,3 +1,15 @@
+velora-shell (2.0.43.lingmo.1) unstable; urgency=medium
+
+  * rework system tray architecture and remove external tray dependencies
+    - remove Alpha watermark related code and assets
+    - replace external tray loading with a built-in native tray implementation
+    - refactor tray management logic and related components
+    - update CMake configuration and project dependencies
+    - fix display issues in the notification panel and dock
+    - update copyright year ranges
+  
+ -- Lingmo OS Team <team@lingmo.org>  Thu, 18 Jun 2026 23:55:00 +0800
+
 velora-shell (2.0.42.lingmo.1) unstable; urgency=medium
 
   * implement native system tray architecture

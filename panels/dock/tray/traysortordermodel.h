@@ -5,7 +5,6 @@
 #pragma once
 
 #include "constants.h"
-#include <dde-dock/constants.h>
 #include <QQmlEngine>
 #include <QStandardItemModel>
 

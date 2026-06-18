@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+# SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -18,8 +18,6 @@ file(
     dockabstractsettingsconfig.h
     dockdbusproxy.cpp
     dockdbusproxy.h
-    dockiteminfo.cpp
-    dockiteminfo.h
     dockpanel.cpp
     dockpanel.h
     docksettings.cpp
@@ -30,10 +28,6 @@ file(
     waylanddockhelper.cpp
     loadtrayplugins.h
     loadtrayplugins.cpp
-    nativetrayitems.h
-    nativetrayitems.cpp
-    applicationtraymanager.h
-    applicationtraymanager.cpp
 )
 
 # Old dbus interface compatible
@@ -78,7 +72,13 @@ target_link_libraries(dockpanel PRIVATE
     Qt${QT_VERSION_MAJOR}::WaylandClientPrivate
     Qt${QT_VERSION_MAJOR}::Widgets
     dde-shell-frame
+    dde-shell-dock
 )
+
+if (HAVE_DDE_API_EVENTLOGGER)
+    target_compile_definitions(dockpanel PRIVATE HAVE_DDE_API_EVENTLOGGER)
+    target_link_libraries(dockpanel PRIVATE DDEAPI::EventLogger)
+endif()
 
 if (BUILD_WITH_X11)
     target_compile_definitions(dockpanel PRIVATE BUILD_WITH_X11=)
@@ -101,6 +101,7 @@ add_subdirectory(showdesktop)
 add_subdirectory(taskmanager)
 add_subdirectory(tray)
 add_subdirectory(multitaskview)
+add_subdirectory(frame)
 
 #add_subdirectory(appruntimeitem)
 
@@ -139,6 +140,7 @@ qt_add_qml_module(dock-plugin
     QML_FILES DockCompositor.qml OverflowContainer.qml MenuHelper.qml DockPalette.qml
     AppletItemButton.qml
     AppletItemBackground.qml
+    AppletDockItem.qml
     OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/
 )
 

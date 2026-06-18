@@ -1,16 +1,24 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "globals.h"
 #include "taskmanagersettings.h"
 
+#include <DConfig>
 #include <QJsonObject>
-#include <QJsonDocument>
 
 #include <string>
 
 #include <yaml-cpp/yaml.h>
+
+#ifdef HAVE_DDE_API_EVENTLOGGER
+#include <dde-api/eventlogger.hpp>
+#endif
+
+namespace {
+constexpr qint64 EVENT_LOGGER_MERGE_APP_MODEL = 1000610011;
+}
 
 namespace dock {
 static inline QString bool2EnableStr(bool enable)
@@ -40,9 +48,13 @@ TaskManagerSettings::TaskManagerSettings(QObject *parent)
         if (TASKMANAGER_ALLOWFOCEQUIT_KEY == key) {
             m_allowForceQuit = enableStr2Bool(m_taskManagerDconfig->value(TASKMANAGER_ALLOWFOCEQUIT_KEY).toString());
             Q_EMIT allowedForceQuitChanged();
+        } else if (TASKMANAGER_SHOW_ATTENTION_ANIMATION_KEY == key) {
+            m_showAttentionAnimation = m_taskManagerDconfig->value(TASKMANAGER_SHOW_ATTENTION_ANIMATION_KEY, true).toBool();
+            Q_EMIT showAttentionAnimationChanged();
         } else if (TASKMANAGER_WINDOWSPLIT_KEY == key) {
             m_windowSplit = m_taskManagerDconfig->value(TASKMANAGER_WINDOWSPLIT_KEY).toBool();
             Q_EMIT windowSplitChanged();
+            logMergeAppModel(!m_windowSplit);
         } else if (TASKMANAGER_DOCKEDELEMENTS_KEY == key) {
             m_dockedElements = m_taskManagerDconfig->value(TASKMANAGER_DOCKEDELEMENTS_KEY, {}).toStringList();
             Q_EMIT dockedElementsChanged();
@@ -50,11 +62,13 @@ TaskManagerSettings::TaskManagerSettings(QObject *parent)
     });
 
     m_allowForceQuit = enableStr2Bool(m_taskManagerDconfig->value(TASKMANAGER_ALLOWFOCEQUIT_KEY).toString());
+    m_showAttentionAnimation = m_taskManagerDconfig->value(TASKMANAGER_SHOW_ATTENTION_ANIMATION_KEY, true).toBool();
     m_windowSplit = m_taskManagerDconfig->value(TASKMANAGER_WINDOWSPLIT_KEY).toBool();
     m_cgroupsBasedGrouping = m_taskManagerDconfig->value(TASKMANAGER_CGROUPS_BASED_GROUPING_KEY, true).toBool();
     m_dockedElements = m_taskManagerDconfig->value(TASKMANAGER_DOCKEDELEMENTS_KEY, {}).toStringList();
     m_cgroupsBasedGroupingSkipAppIds = m_taskManagerDconfig->value(TASKMANAGER_CGROUPS_BASED_GROUPING_SKIP_APPIDS, {"deepin-terminal"}).toStringList();
     m_cgroupsBasedGroupingSkipCategories = m_taskManagerDconfig->value(TASKMANAGER_CGROUPS_BASED_GROUPING_SKIP_CATEGORIES, {"TerminalEmulator"}).toStringList();
+    m_windowIconWhitelist = m_taskManagerDconfig->value(TASKMANAGER_WINDOW_ICON_WHITELIST_KEY, {"com.tencent.wechat"}).toStringList();
     migrateFromDockedItems();
 }
 
@@ -67,6 +81,11 @@ void TaskManagerSettings::setAllowedForceQuit(bool allowed)
 {
     m_allowForceQuit = allowed;
     m_taskManagerDconfig->setValue(TASKMANAGER_ALLOWFOCEQUIT_KEY, bool2EnableStr(m_allowForceQuit));
+}
+
+bool TaskManagerSettings::showAttentionAnimation() const
+{
+    return m_showAttentionAnimation;
 }
 
 bool TaskManagerSettings::isWindowSplit()
@@ -93,6 +112,11 @@ QStringList TaskManagerSettings::cgroupsBasedGroupingSkipIds() const
 QStringList TaskManagerSettings::cgroupsBasedGroupingSkipCategories() const
 {
     return m_cgroupsBasedGroupingSkipCategories;
+}
+
+QStringList TaskManagerSettings::windowIconWhitelist() const
+{
+    return m_windowIconWhitelist;
 }
 
 QStringList TaskManagerSettings::dockedElements() const
@@ -181,6 +205,17 @@ void TaskManagerSettings::removeDockedElement(const QString &element)
     m_dockedElements.removeAll(element);
     Q_EMIT dockedElementsChanged();
     saveDockedElements();
+}
+
+void TaskManagerSettings::logMergeAppModel(bool mergeAppModelOn)
+{
+#ifdef HAVE_DDE_API_EVENTLOGGER
+    DDE_EventLogger::EventLogger::instance().writeEventLog(
+        DDE_EventLogger::EventLoggerData(EVENT_LOGGER_MERGE_APP_MODEL, QStringLiteral("taskmanager_config"), {
+            {QStringLiteral("merge_app_model_on"), mergeAppModelOn ? QStringLiteral("true") : QStringLiteral("false")}
+        }));
+#endif
+    qDebug() << "EventLogger: merge_app_model_on:" << mergeAppModelOn;
 }
 
 }

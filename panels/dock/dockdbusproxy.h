@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023 - 2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -7,13 +7,15 @@
 #include "dsglobal.h"
 #include "dockpanel.h"
 #include "constants.h"
-#include "dockiteminfo.h"
+#include "frame/dockiteminfo.h"
+#include "frame/dappletdock.h"
 
 #include <appletproxy.h>
 
 #include <QObject>
 #include <QDBusContext>
 #include <QDBusArgument>
+#include <QTimer>
 
 /** this class used for old dock api compatible
   * it will forward old dbus call to new implementation
@@ -86,11 +88,11 @@ Q_SIGNALS:
 private:
     DockPanel* parent() const;
     QString getAppID(const QString &desktopfile);
-    void setPluginVisible(const QString &pluginId, const QVariantMap &pluginsVisible);
+    void updateDockPluginsVisible(const QVariantMap &pluginsVisible);
+    void logInitialPluginState();
+    void logCurrentVisiblePluginList(const QString &changedItemKey = QString(), bool changedVisible = true);
 
     DS_NAMESPACE::DAppletProxy *m_oldDockApplet;
-    DS_NAMESPACE::DAppletProxy *m_multitaskviewApplet;
     DS_NAMESPACE::DAppletProxy *m_trayApplet;
 };
 }
-

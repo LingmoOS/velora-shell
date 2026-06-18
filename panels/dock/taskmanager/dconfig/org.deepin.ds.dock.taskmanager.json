@@ -22,6 +22,17 @@
 			"permissions": "readwrite",
 			"visibility": "private"
 		},
+		"showAttentionAnimation": {
+			"value": true,
+			"serial": 0,
+			"flags": [],
+			"name": "Show Attention Animation",
+			"name[zh_CN]": "显示消息通知动画",
+			"description": "Show attention animation for applications",
+			"description[zh_CN]": "显示应用有新消息时的水波纹动画",
+			"permissions": "readwrite",
+			"visibility": "private"
+		},
 		"noTaskGrouping": {
 			"value": false,
 			"serial": 0,
@@ -85,6 +96,17 @@
 			"description": "The items which is docked when dock is started.",
 			"permissions": "readwrite",
 			"visibility": "private"
+		},
+		"windowIconWhitelist": {
+			"value": ["com.tencent.wechat", "com.qq.weixin.work.deepin"],
+			"serial": 0,
+			"flags": [],
+			"name": "windowIconWhitelist",
+			"name[zh_CN]": "窗口图标白名单",
+			"description": "List of app id that should prefer window icon when window split is disabled",
+			"permissions": "readwrite",
+			"visibility": "private"
 		}
+		
 	}
 }
