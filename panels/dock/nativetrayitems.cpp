@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "nativetrayitems.h"
-#include "traysortordermodel.h"
+#include "tray/traysortordermodel.h"
 
 #include <QDateTime>
 #include <QDBusReply>
