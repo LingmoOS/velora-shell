@@ -166,7 +166,7 @@ void NativeTrayItems::setupTimers()
         updatePowerStatus();
         updateNetworkStatus();
         updateBrightness();
-    ));
+    });
     m_slowUpdateTimer->start(10000);
 }
 
