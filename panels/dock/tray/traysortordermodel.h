@@ -118,7 +118,7 @@ private:
                                   const QString &sectionType,
                                   const QString &delegateType,
                                   const QStringList &forbiddenSections = {},
-                                  int pluginFlags = Dock::Attribute_Normal);
+                                  int pluginFlags = dock::Attribute_Normal);
     void updateVisualIndexes();
     QString registerSurfaceId(const QVariantMap &surfaceData);
     void loadDataFromDConfig();

@@ -79,7 +79,7 @@ bool TrayItem::loopDockItemInfosModel(QAbstractItemModel *model, const std::func
         if (!item)
             return true;
         int flags = item->property("pluginFlags").toInt();
-        if (!(flags & Dock::Attribute_CanSetting) || flags & Dock::Attribute_ForceDock) {
+        if (!(flags & dock::Attribute_CanSetting) || flags & dock::Attribute_ForceDock) {
             continue;
         }
 
