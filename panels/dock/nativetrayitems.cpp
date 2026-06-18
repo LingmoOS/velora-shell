@@ -57,7 +57,7 @@ void NativeTrayItems::initialize()
     // === FIXED items (always visible, cannot drag) ===
 
     // 1. Date/Time - always visible in dock
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("datetime"),
         QStringLiteral("datetime-item-key"),
         tr("Date & Time"),
@@ -65,10 +65,10 @@ void NativeTrayItems::initialize()
         DockPluginType::Fixed,
         SectionType::Fixed,
         true
-    });
+    ));
 
     // 2. Power/Battery
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("power"),
         QStringLiteral("power-item-key"),
         tr("Power"),
@@ -76,10 +76,10 @@ void NativeTrayItems::initialize()
         DockPluginType::Fixed,
         SectionType::Fixed,
         true
-    });
+    ));
 
     // 3. Shutdown/Power menu
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("shutdown"),
         QStringLiteral("shutdown-item-key"),
         tr("Shutdown"),
@@ -87,12 +87,12 @@ void NativeTrayItems::initialize()
         DockPluginType::Fixed,
         SectionType::Fixed,
         true
-    });
+    ));
 
     // === PINNED items (can drag to rearrange) ===
 
     // 4. Network status
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("network"),
         QStringLiteral("network-item-key"),
         tr("Network"),
@@ -100,10 +100,10 @@ void NativeTrayItems::initialize()
         DockPluginType::Tray,
         SectionType::Pinned,
         true
-    });
+    ));
 
     // 5. Sound volume
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("sound"),
         QStringLiteral("sound-item-key"),
         tr("Sound"),
@@ -111,10 +111,10 @@ void NativeTrayItems::initialize()
         DockPluginType::Tray,
         SectionType::Pinned,
         true
-    });
+    ));
 
     // 6. Brightness control
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("brightness"),
         QStringLiteral("brightness-item-key"),
         tr("Brightness"),
@@ -122,10 +122,10 @@ void NativeTrayItems::initialize()
         DockPluginType::Tray,
         SectionType::Pinned,
         true
-    });
+    ));
 
     // 7. Bluetooth
-    registerItem({
+    registerItem(NativeTrayItem(
         QStringLiteral("bluetooth"),
         QStringLiteral("bluetooth-item-key"),
         tr("Bluetooth"),
@@ -133,7 +133,7 @@ void NativeTrayItems::initialize()
         DockPluginType::Tray,
         SectionType::Pinned,
         true
-    });
+    ));
 
     // Initial data fetch
     updateDateTime();
@@ -166,7 +166,7 @@ void NativeTrayItems::setupTimers()
         updatePowerStatus();
         updateNetworkStatus();
         updateBrightness();
-    });
+    ));
     m_slowUpdateTimer->start(10000);
 }
 
