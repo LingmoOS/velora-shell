@@ -5,20 +5,26 @@
 #include "toppanel.h"
 
 #include "pluginfactory.h"
-#include "layoutmodemanager.h"
 
 #include <QQuickWindow>
+#include <DConfig>
 
 namespace toppanel {
+
+DCORE_USE_NAMESPACE
 
 TopPanel::TopPanel(QObject *parent)
     : DPanel(parent)
 {
-    setProperty("visible", dock::LayoutModeManager::instance().isDockMode());
-    connect(&dock::LayoutModeManager::instance(), &dock::LayoutModeManager::modeChanged,
-            this, [this](dock::LayoutMode mode) {
-        setProperty("visible", mode == dock::LayoutMode::Dock);
-    });
+    auto dconfig = DConfig::create("org.deepin.dde.shell", "org.deepin.ds.dock.layout", QString(), this);
+    auto setFromMode = [this](int mode) { setProperty("visible", mode == 1); };
+    setFromMode(dconfig ? dconfig->value("layoutMode", 0).toInt() : 0);
+    if (dconfig) {
+        connect(dconfig, &DConfig::valueChanged, this, [this, setFromMode, dconfig](const QString &key) {
+            if (key == QLatin1String("layoutMode"))
+                setFromMode(dconfig->value("layoutMode", 0).toInt());
+        });
+    }
 }
 
 bool TopPanel::load()

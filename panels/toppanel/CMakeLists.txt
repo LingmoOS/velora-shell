@@ -7,13 +7,8 @@ add_library(ds-toppanel SHARED
     toppanel.cpp
 )
 
-target_include_directories(ds-toppanel PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/../dock"
-)
-
 target_link_libraries(ds-toppanel PRIVATE
     dde-shell-frame
-    dock-plugin
 )
 
 install(TARGETS ds-toppanel DESTINATION "${LIB_INSTALL_DIR}")
