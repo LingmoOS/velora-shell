@@ -11,5 +11,4 @@ target_link_libraries(ds-toppanel PRIVATE
     dde-shell-frame
 )
 
-install(TARGETS ds-toppanel DESTINATION "${LIB_INSTALL_DIR}")
 ds_install_package(PACKAGE org.deepin.ds.toppanel TARGET ds-toppanel)
