@@ -1,6 +1,6 @@
-velora-shell (2.1.0.lingmo.1) unstable; urgency=medium
+velora-shell (2.1.1.lingmo.1) unstable; urgency=medium
 
-  * build: 更新版本号至2.1.0.lingmo.1，添加顶部面板并重构布局模式管理
+  * build: 更新版本号至2.1.1.lingmo.1，添加顶部面板并重构布局模式管理
   
  -- Lingmo OS Team <team@lingmo.org>  Sun, 21 Jun 2026 21:58:00 +0800
 

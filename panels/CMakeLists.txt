@@ -2,6 +2,6 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-add_subdirectory(dock)
+# add_subdirectory(dock)
 add_subdirectory(notification)
-add_subdirectory(toppanel)
+# add_subdirectory(toppanel)
