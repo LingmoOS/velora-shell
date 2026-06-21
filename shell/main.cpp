@@ -198,6 +198,9 @@ int main(int argc, char *argv[])
         });
     }
 
+    // 屏蔽面板 dock，兼容旧版 dde-dock
+    // pluginIds.removeAll(QStringLiteral("org.deepin.ds.dock"));
+
     // DConfig migration disabled: shell now relies on the new DConfig namespaces directly.
     // shell.dconfigsMigrate();
     // TODO disable qml's cache avoid to parsing error for ExecutionEngine.

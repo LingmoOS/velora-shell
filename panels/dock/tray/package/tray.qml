@@ -34,6 +34,8 @@ AppletItem {
         Applet.fixedPluginModel = Qt.binding(function () {
             return DockCompositor.fixedPluginSurfaces
         })
+        DDT.NativeTrayItems.initialize()
+        rebuildSurfacesData()
     }
 
     PanelPopup {
@@ -125,42 +127,46 @@ AppletItem {
         return false
     }
 
+    function rebuildSurfacesData() {
+        let nativeItems = DDT.NativeTrayItems ? DDT.NativeTrayItems.getSurfacesData() : []
+        let surfacesData = nativeItems.slice()
+        for (let i = 0; i < DockCompositor.trayPluginSurfaces.count; i++) {
+            let item = DockCompositor.trayPluginSurfaces.get(i).shellSurface
+            if (filterTrayPlugins.indexOf(item.pluginId) >= 0)
+                continue;
+            let surfaceId = `${item.pluginId}::${item.itemKey}`
+            let forbiddenSections = ["fixed"]
+            let preferredSection = item.pluginId === "application-tray" ? "stashed" : "collapsable"
+
+            if (item.pluginSizePolicy === Dock.Custom) {
+                forbiddenSections = ["stashed", "fixed"]
+                preferredSection = "pinned"
+            }
+
+            if (item.pluginFlags & 0x1000) { // force dock.
+                forbiddenSections = ["stashed", "collapsable", "fixed"]
+                preferredSection = "pinned"
+            }
+
+            surfacesData.push({"surfaceId": surfaceId, "delegateType": "legacy-tray-plugin", "sectionType": preferredSection, "forbiddenSections": forbiddenSections, "pluginFlags": item.pluginFlags})
+        }
+        for (let i = 0; i < DockCompositor.fixedPluginSurfaces.count; i++) {
+            let item = DockCompositor.fixedPluginSurfaces.get(i).shellSurface
+            let surfaceId = `${item.pluginId}::${item.itemKey}`
+            let forbiddenSections = ["stashed", "collapsable", "pinned"]
+            let preferredSection = "fixed"
+
+            surfacesData.push({"surfaceId": surfaceId, "delegateType": "legacy-tray-plugin", "sectionType": preferredSection, "forbiddenSections": forbiddenSections, "pluginFlags": item.pluginFlags})
+        }
+        DDT.TraySortOrderModel.availableSurfaces = surfacesData
+        console.log("rebuildSurfacesData", surfacesData.length)
+        Applet.emitPluginsChanged()
+    }
+
     Connections {
         target: DockCompositor
         function onPluginSurfacesUpdated() {
-            let surfacesData = []
-            for (let i = 0; i < DockCompositor.trayPluginSurfaces.count; i++) {
-                let item = DockCompositor.trayPluginSurfaces.get(i).shellSurface
-                if (filterTrayPlugins.indexOf(item.pluginId) >= 0)
-                    continue;
-                let surfaceId = `${item.pluginId}::${item.itemKey}`
-                let forbiddenSections = ["fixed"]
-                let preferredSection = item.pluginId === "application-tray" ? "stashed" : "collapsable"
-
-                if (item.pluginSizePolicy === Dock.Custom) {
-                    forbiddenSections = ["stashed", "fixed"]
-                    preferredSection = "pinned"
-                }
-
-                if (item.pluginFlags & 0x1000) { // force dock.
-                    forbiddenSections = ["stashed", "collapsable", "fixed"]
-                    preferredSection = "pinned"
-                }
-
-                surfacesData.push({"surfaceId": surfaceId, "delegateType": "legacy-tray-plugin", "sectionType": preferredSection, "forbiddenSections": forbiddenSections, "pluginFlags": item.pluginFlags})
-            }
-            // actually only for datetime plugin currently
-            for (let i = 0; i < DockCompositor.fixedPluginSurfaces.count; i++) {
-                let item = DockCompositor.fixedPluginSurfaces.get(i).shellSurface
-                let surfaceId = `${item.pluginId}::${item.itemKey}`
-                let forbiddenSections = ["stashed", "collapsable", "pinned"]
-                let preferredSection = "fixed"
-
-                surfacesData.push({"surfaceId": surfaceId, "delegateType": "legacy-tray-plugin", "sectionType": preferredSection, "forbiddenSections": forbiddenSections, "pluginFlags": item.pluginFlags})
-            }
-            DDT.TraySortOrderModel.availableSurfaces = surfacesData
-            console.log("onPluginSurfacesUpdated", surfacesData.length)
-            Applet.emitPluginsChanged()
+            tray.rebuildSurfacesData()
         }
 
         function onRequestShutdown(type) {

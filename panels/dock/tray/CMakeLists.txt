@@ -4,7 +4,7 @@
 
 add_subdirectory(quickpanel)
 
-find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Gui Qml)
+find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS Gui Qml DBus)
 find_package(Dtk6 REQUIRED COMPONENTS Core Gui)
 find_package(DdeTrayLoader REQUIRED)
 
@@ -22,6 +22,8 @@ qt_add_qml_module(dock-tray
         trayitempositionmanager.h
         ksortfilterproxymodel.cpp
         ksortfilterproxymodel.h
+        ../nativetrayitems.cpp
+        ../nativetrayitems.h
     QML_FILES
         SurfacePopup.qml
         SurfaceSubPopup.qml
@@ -31,9 +33,14 @@ qt_add_qml_module(dock-tray
     OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/plugins/org/deepin/ds/dock/tray/
 )
 
+target_include_directories(dock-tray PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}/.."
+)
+
 target_link_libraries(dock-tray PUBLIC
     Qt${QT_VERSION_MAJOR}::Gui
     Qt${QT_VERSION_MAJOR}::Qml
+    Qt${QT_VERSION_MAJOR}::DBus
     Dtk${DTK_VERSION_MAJOR}::Core
 )
 

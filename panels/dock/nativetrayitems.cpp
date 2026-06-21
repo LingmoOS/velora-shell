@@ -399,4 +399,36 @@ QVariantMap NativeTrayItems::getItemData(const QString &pluginId) const
     return data;
 }
 
+QList<QVariantMap> NativeTrayItems::getSurfacesData() const
+{
+    QList<QVariantMap> result;
+
+    for (auto it = m_items.constBegin(); it != m_items.constEnd(); ++it) {
+        const auto &item = it.value();
+        QVariantMap entry;
+
+        QString surfaceId = QStringLiteral("native::") + item.pluginId;
+        entry[QStringLiteral("surfaceId")] = surfaceId;
+        entry[QStringLiteral("delegateType")] = QStringLiteral("native-tray-plugin");
+        entry[QStringLiteral("pluginFlags")] = 0;
+
+        if (item.pluginType == DockPluginType::Fixed) {
+            entry[QStringLiteral("sectionType")] = QStringLiteral("fixed");
+            entry[QStringLiteral("forbiddenSections")] = QStringList{
+                QStringLiteral("stashed"), QStringLiteral("collapsable"), QStringLiteral("pinned")
+            };
+        } else if (item.pluginType == DockPluginType::Tray) {
+            entry[QStringLiteral("sectionType")] = QStringLiteral("collapsable");
+            entry[QStringLiteral("forbiddenSections")] = QStringList{ QStringLiteral("fixed") };
+        } else {
+            entry[QStringLiteral("sectionType")] = QStringLiteral("pinned");
+            entry[QStringLiteral("forbiddenSections")] = QStringList{ QStringLiteral("fixed") };
+        }
+
+        result.append(entry);
+    }
+
+    return result;
+}
+
 } // namespace dock

@@ -57,6 +57,11 @@ public:
     Q_INVOKABLE QString getIconName(const QString &pluginId) const;
     Q_INVOKABLE QVariantMap getItemData(const QString &pluginId) const;
 
+    // Returns a list of QVariantMap entries suitable for TraySortOrderModel.availableSurfaces.
+    // Each entry contains: surfaceId, delegateType, sectionType, forbiddenSections, pluginFlags.
+    // Surface IDs use the format "native::<pluginId>" to avoid conflicts with Wayland surfaces.
+    Q_INVOKABLE QList<QVariantMap> getSurfacesData() const;
+
 signals:
     void itemUpdated(const QString &pluginId);   // Emitted when item data changes
     void initialized();                           // Emitted when all items are registered

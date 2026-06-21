@@ -15,7 +15,6 @@
 #include "dockdbusproxy.h"
 #include "dockfrontadaptor.h"
 #include "dockdaemonadaptor.h"
-#include "loadtrayplugins.h"
 
 #include <DDBusSender>
 #include <QQuickWindow>
@@ -39,16 +38,11 @@ DockPanel::DockPanel(QObject *parent)
     , m_theme(ColorTheme::Dark)
     , m_hideState(Show)
     , m_dockScreen(nullptr)
-    , m_loadTrayPlugins(new LoadTrayPlugins(this))
     , m_compositorReady(false)
     , m_launcherShown(false)
     , m_contextDragging(false)
     , m_isResizing(false)
 {
-    connect(this, &DockPanel::compositorReadyChanged, this, [this] {
-        if (!m_compositorReady) return;
-        m_loadTrayPlugins->loadDockPlugins();
-    });
 }
 
 bool DockPanel::load()

@@ -1,4 +1,4 @@
-velora-shell (2.0.46.lingmo.1) unstable; urgency=medium
+velora-shell (2.0.46.lingmo.12) unstable; urgency=medium
 
   * build: 重构系统托盘架构，移除外部托盘依赖
   * fix: 优化DConfig创建逻辑，处理插件加载失败的情况

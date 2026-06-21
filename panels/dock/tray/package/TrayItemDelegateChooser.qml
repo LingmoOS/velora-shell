@@ -79,4 +79,14 @@ LQM.DelegateChooser {
             }
         }
     }
+    LQM.DelegateChoice {
+        roleValue: "native-tray-plugin"
+        TrayItemPositioner {
+            visualSize: nativeDelegate.visualSize
+            contentItem: NativeTrayItemDelegate {
+                id: nativeDelegate
+                surfaceId: model.surfaceId
+            }
+        }
+    }
 }
