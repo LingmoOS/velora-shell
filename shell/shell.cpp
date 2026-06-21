@@ -70,6 +70,10 @@ void Shell::setFlickableWheelDeceleration(const int &value)
 
 void Shell::dconfigsMigrate()
 {
+    Q_UNUSED(this);
+    // DConfig migration has been disabled. Shell now uses new DConfig namespaces directly.
+    // The old migration logic is preserved here for reference.
+    /*
     std::unique_ptr<Dtk::Core::DConfig> dconfig(Dtk::Core::DConfig::create("org.deepin.dde.shell", "org.deepin.dde.shell"));
     auto migratedDconfigs = dconfig->value(QStringLiteral("migratedDConfigs"), QVariantHash()).toHash();
 
@@ -104,6 +108,7 @@ void Shell::dconfigsMigrate()
     }
 
     dconfig->setValue(QStringLiteral("migratedDConfigs"), migratedDconfigs);
+    */
 }
 
 bool Shell::registerDBusService(const QString &serviceName)
@@ -118,6 +123,12 @@ bool Shell::registerDBusService(const QString &serviceName)
 
 bool Shell::dconfigMigrate(const QString &newConf, const QString &oldConf)
 {
+    Q_UNUSED(newConf);
+    Q_UNUSED(oldConf);
+    // DConfig migration is disabled. New DConfig keys are used directly.
+    return false;
+
+    /*
     auto newLastIndex = newConf.lastIndexOf('/');
     auto newFirstIndex = newConf.indexOf('/');
 
@@ -151,6 +162,7 @@ bool Shell::dconfigMigrate(const QString &newConf, const QString &oldConf)
     }
 
     return true;
+    */
 }
 
 DS_END_NAMESPACE

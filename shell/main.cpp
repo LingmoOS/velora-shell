@@ -198,7 +198,8 @@ int main(int argc, char *argv[])
         });
     }
 
-    shell.dconfigsMigrate();
+    // DConfig migration disabled: shell now relies on the new DConfig namespaces directly.
+    // shell.dconfigsMigrate();
     // TODO disable qml's cache avoid to parsing error for ExecutionEngine.
     shell.disableQmlCache();
     shell.setFlickableWheelDeceleration(6000);
