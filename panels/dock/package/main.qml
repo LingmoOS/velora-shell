@@ -53,8 +53,14 @@ Window {
     property real dockItemIconSize: dockItemMaxSize * 9 / 14
 
     // NOTE: -1 means not set its size, follow the platform size
-    width: positionForAnimation === Dock.Top || positionForAnimation === Dock.Bottom ? -1 : dockSize
-    height: positionForAnimation === Dock.Left || positionForAnimation === Dock.Right ? -1 : dockSize
+    width: LayoutModeManager.isDockMode
+        ? Math.max(dockSize * 3, Math.min(Screen.width * 0.6, dockCenterPart.implicitWidth + dockLeftPart.implicitWidth + 80))
+        : (positionForAnimation === Dock.Top || positionForAnimation === Dock.Bottom ? -1 : dockSize)
+    height: LayoutModeManager.isDockMode
+        ? dockSize
+        : (positionForAnimation === Dock.Left || positionForAnimation === Dock.Right ? -1 : dockSize)
+    Behavior on width { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
+    Behavior on height { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
     color: "transparent"
     flags: Qt.WindowDoesNotAcceptFocus
 
@@ -73,14 +79,16 @@ Window {
         MenuHelper.openMenu(dockMenuLoader.item)
     }
 
-    DLayerShellWindow.anchors: position2Anchors(positionForAnimation)
+    DLayerShellWindow.anchors: LayoutModeManager.isDockMode
+        ? DLayerShellWindow.AnchorBottom
+        : position2Anchors(positionForAnimation)
     DLayerShellWindow.layer: DLayerShellWindow.LayerTop
-    DLayerShellWindow.exclusionZone: Panel.hideMode === Dock.KeepShowing ? Applet.dockSize : 0
+    DLayerShellWindow.exclusionZone: LayoutModeManager.isDockMode ? 0 : (Panel.hideMode === Dock.KeepShowing ? Applet.dockSize : 0)
     DLayerShellWindow.scope: "dde-shell/dock"
     DLayerShellWindow.keyboardInteractivity: DLayerShellWindow.KeyboardInteractivityOnDemand
 
     D.DWindow.enabled: true
-    D.DWindow.windowRadius: 0
+    D.DWindow.windowRadius: LayoutModeManager.isDockMode && !dock.useColumnLayout ? 13 : 0
     //TODO：由于windoweffect处理有BUG，导致动画结束后一致保持无阴影，无borderwidth状态。 无法恢复到最初的阴影和边框
     //D.DWindow.windowEffect: hideShowAnimation.running ? D.PlatformHandle.EffectNoShadow | D.PlatformHandle.EffectNoBorder : 0
     
@@ -335,6 +343,21 @@ Window {
                     value: Dock.CenterAlignment
                 }
             }
+            LP.MenuItem {
+                text: qsTr("Layout Mode")
+                LP.Menu {
+                    LP.MenuItem {
+                        text: qsTr("Taskbar Mode")
+                        checked: !LayoutModeManager.isDockMode
+                        onTriggered: LayoutModeManager.mode = LayoutModeManager.Taskbar
+                    }
+                    LP.MenuItem {
+                        text: qsTr("Dock Mode (Elegant)")
+                        checked: LayoutModeManager.isDockMode
+                        onTriggered: LayoutModeManager.mode = LayoutModeManager.Dock
+                    }
+                }
+            }
             MutuallyExclusiveMenu {
                 title: qsTr("Position")
                 EnumPropertyMenuItem {
@@ -582,6 +605,7 @@ Window {
 
         Item {
             id: dockRightPart
+            visible: !LayoutModeManager.isDockMode
             implicitWidth: rightLoader.implicitWidth
             implicitHeight: rightLoader.implicitHeight
             anchors.right: parent.right

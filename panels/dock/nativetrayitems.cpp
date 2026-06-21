@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "nativetrayitems.h"
-#include "tray/traysortordermodel.h"
 
 #include <QDateTime>
 #include <QDBusReply>
@@ -40,6 +39,7 @@ namespace SectionType {
 NativeTrayItems::NativeTrayItems(QObject *parent)
     : QObject(parent)
 {
+    initialize();
     setupTimers();
     setupDBusConnections();
 }

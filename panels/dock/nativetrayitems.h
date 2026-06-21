@@ -49,8 +49,8 @@ public:
     // QML singleton provider
     static NativeTrayItems *create(QQmlEngine *qmlEngine, QJSEngine *jsEngine);
 
-    // Initialize all native tray items and register them with TraySortOrderModel
-    void initialize();
+    // Initialize all native tray items
+    Q_INVOKABLE void initialize();
 
     // Get current value for display (called by QML delegates)
     Q_INVOKABLE QString getDisplayText(const QString &pluginId) const;

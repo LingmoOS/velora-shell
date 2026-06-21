@@ -1,0 +1,9 @@
+{
+    "Plugin": {
+        "Version": "1.0",
+        "Id": "org.deepin.ds.toppanel",
+        "Url": "TopPanel.qml",
+        "ContainmentType": "Panel",
+        "Category": "DDE"
+    }
+}

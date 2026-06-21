@@ -1,0 +1,16 @@
+{
+    "magic": "dsg.config.meta",
+    "version": "1.0",
+    "contents": {
+        "layoutMode": {
+            "value": 0,
+            "serial": 0,
+            "flags": [],
+            "name": "Layout Mode",
+            "name[zh_CN]": "布局模式",
+            "description": "0 = Taskbar (traditional bottom dock), 1 = Dock (elegant macOS-style top panel + centered dock)",
+            "permissions": "readwrite",
+            "visibility": "private"
+        }
+    }
+}
