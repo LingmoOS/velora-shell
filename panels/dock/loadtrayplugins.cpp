@@ -153,10 +153,17 @@ QMap<QString, QString> LoadTrayPlugins::groupPlugins(const QStringList &pluginPa
     const QString otherPluginsKey = "otherTrayPlugins";
 
     auto dConfig = Dtk::Core::DConfig::create("org.deepin.dde.shell", "org.deepin.ds.dock.tray", QString());
-    QStringList selfMaintenanceTrayPlugins = dConfig->value(selfMaintenancePluginsKey).toStringList();
-    QStringList subprojectTrayPlugins = dConfig->value(subprojectPluginsKey).toStringList();
-    QStringList crashProneTrayPlugins = dConfig->value(crashPronePluginsKey).toStringList();
-    dConfig->deleteLater();
+    QStringList selfMaintenanceTrayPlugins;
+    QStringList subprojectTrayPlugins;
+    QStringList crashProneTrayPlugins;
+    if (dConfig) {
+        selfMaintenanceTrayPlugins = dConfig->value(selfMaintenancePluginsKey).toStringList();
+        subprojectTrayPlugins = dConfig->value(subprojectPluginsKey).toStringList();
+        crashProneTrayPlugins = dConfig->value(crashPronePluginsKey).toStringList();
+        dConfig->deleteLater();
+    } else {
+        qWarning() << "Failed to create DConfig for org.deepin.ds.dock.tray, all plugins will use default grouping";
+    }
 
     QStringList selfMaintenancePluginPaths;
     QStringList subprojectPluginPaths;

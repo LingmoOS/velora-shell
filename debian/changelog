@@ -1,3 +1,10 @@
+velora-shell (2.0.45.lingmo.1) unstable; urgency=medium
+
+  * build: 重构系统托盘架构，移除外部托盘依赖
+  * fix: 优化DConfig创建逻辑，处理插件加载失败的情况
+  
+ -- Lingmo OS Team <team@lingmo.org>  Sun, 21 Jun 2026 13:28:00 +0800
+
 velora-shell (2.0.44.lingmo.1) unstable; urgency=medium
 
   * rework system tray architecture and remove external tray dependencies
