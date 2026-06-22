@@ -17,6 +17,7 @@ import org.deepin.dtk.style 1.0 as DStyle
 
 Window {
     id: dock
+    visible: true
     property int positionForAnimation: Panel.position
     property bool useColumnLayout: positionForAnimation % 2
     property int dockCenterPartCount: dockCenterPartModel.count

@@ -202,6 +202,9 @@ int main(int argc, char *argv[])
     pluginIds.removeAll(QStringLiteral("org.deepin.ds.dock"));
     pluginIds.removeAll(QStringLiteral("org.deepin.ds.toppanel"));
 
+    // 加载独立的启动器 applet（无 Parent 依赖），注册 Launcher1 D-Bus 并显示启动器界面
+    pluginIds << QStringLiteral("org.deepin.ds.launcher");
+
     // DConfig migration disabled: shell now relies on the new DConfig namespaces directly.
     // shell.dconfigsMigrate();
     // TODO disable qml's cache avoid to parsing error for ExecutionEngine.
