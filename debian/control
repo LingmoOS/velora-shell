@@ -55,7 +55,7 @@ Description: DDE Shell library
 Package: dde-shell
 Architecture: any
 Depends:
- velora-tray-loader (>= 1.99.8),
+ lingmo-dock,
  libdde-shell (= ${binary:Version}),
  libdtk6declarative,
  libqt6sql6-sqlite,
