@@ -1,4 +1,4 @@
-velora-shell (2.1.3.lingmo.1) unstable; urgency=medium
+velora-shell (2.1.3.lingmo.2) unstable; urgency=medium
 
   * build: 更新 dde-shell 的依赖项，将 velora-tray-loader 替换为 lingmo-dock
   
