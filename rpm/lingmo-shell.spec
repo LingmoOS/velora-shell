@@ -1,9 +1,9 @@
-Name:           velora-shell
+Name:           lingmo-shell
 Version:        2.0.35
 Release:        1%{?dist}
 Summary:        Lingmo OS Desktop Shell (DDE Shell)
 License:        GPL-3.0-or-later
-URL:            https://github.com/LingmoOS/velora-shell
+URL:            https://github.com/LingmoOS/lingmo-shell
 
 # Local source tarball (generated from checkout in CI)
 Source0:        velora-shell-%{version}.tar.gz
@@ -49,14 +49,14 @@ applets, and desktop management.
 %files
 %doc README.md
 %license LICENSE*
-%{_libdir}/dde-shell/
+%{_libdir}/lingmo-shell/
 %{_libdir}/qt6/qml/org/deepin/ds/
-%{_datadir}/dde-shell/
+%{_datadir}/lingmo-shell/
 %{_datadir}/dbus-1/services/*.service
 %{_datadir}/dbus-1/system-services/*.service
 %{_datadir}/dsg/
 %{_bindir}/*
-%{_libexecdir}/dde-shell/
+%{_libexecdir}/lingmo-shell/
 
 %changelog
 * Tue Jun 18 2025 LingmoOS Build System <dev@lingmo.os> - %{version}-1

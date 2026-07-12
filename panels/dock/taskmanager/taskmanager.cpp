@@ -178,8 +178,8 @@ bool TaskManager::init()
 
     auto adaptor = new TaskManagerAdaptor(this);
     Q_UNUSED(adaptor)
-    QDBusConnection::sessionBus().registerService("org.deepin.ds.Dock.TaskManager");
-    QDBusConnection::sessionBus().registerObject("/org/deepin/ds/Dock/TaskManager", "org.deepin.ds.Dock.TaskManager", this);
+    QDBusConnection::sessionBus().registerService("org.lingmo.ds.Dock.TaskManager");
+    QDBusConnection::sessionBus().registerObject("/org/lingmo/ds/Dock/TaskManager", "org.lingmo.ds.Dock.TaskManager", this);
 
     DApplet::init();
 

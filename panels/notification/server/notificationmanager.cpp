@@ -641,13 +641,13 @@ bool NotificationManager::invokeShellAction(const QString &data)
 
 void NotificationManager::initScreenLockedState()
 {
-    const QString interfaceAndServiceName = "org.deepin.dde.LockFront1";
+    const QString interfaceAndServiceName = "org.lingmo.LockFront1";
     const QString path = "/org/deepin/dde/LockFront1";
 
     QDBusInterface interface(interfaceAndServiceName, path,
         "org.freedesktop.DBus.Properties", QDBusConnection::sessionBus());
 
-    QDBusReply<QDBusVariant> reply = interface.call("Get", "org.deepin.dde.LockFront1", "Visible");
+    QDBusReply<QDBusVariant> reply = interface.call("Get", "org.lingmo.LockFront1", "Visible");
     if (reply.isValid()) {
         m_screenLocked = reply.value().variant().toBool();
     } else {

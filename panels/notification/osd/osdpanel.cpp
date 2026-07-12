@@ -29,17 +29,17 @@ bool OsdPanel::load()
 bool OsdPanel::init()
 {
     auto bus = QDBusConnection::sessionBus();
-    if (!bus.registerObject(QStringLiteral("/org/deepin/dde/shell/osd"),
+    if (!bus.registerObject(QStringLiteral("/org/lingmo/shell/osd"),
                        QStringLiteral("org.deepin.dde.shell.osd"),
                        this,
                            QDBusConnection::ExportAllSlots)) {
         return false;
     }
 
-    bus.interface()->registerService("org.deepin.dde.Osd1",
+    bus.interface()->registerService("org.lingmo.Osd1",
                                             QDBusConnectionInterface::ReplaceExistingService,
                                             QDBusConnectionInterface::AllowReplacement);
-    if (!bus.registerObject("/", "org.deepin.dde.Osd1", this, QDBusConnection::ExportAllSlots)) {
+    if (!bus.registerObject("/", "org.lingmo.Osd1", this, QDBusConnection::ExportAllSlots)) {
         return false;
     }
     new OsdDBusAdaptor(this);

@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#busctl --user monitor org.deepin.dde.Notification1
+#busctl --user monitor org.lingmo.Notification1
 
-#dbus-send --session --type=method_call --dest=org.deepin.dde.Notification1 /org/deepin/dde/Notification1 org.deepin.dde.Notification1.ReplaceBubble boolean:false
+#dbus-send --session --type=method_call --dest=org.lingmo.Notification1 /org/lingmo/Notification1 org.lingmo.Notification1.ReplaceBubble boolean:false
 
 notify-send 1 -a dde-control-center -t 3000
 notify-send 2 -a dde-control-center -t 4000

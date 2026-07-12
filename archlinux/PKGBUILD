@@ -1,15 +1,15 @@
 # Maintainer: justforlxz <justforlxz@gmail.com>
 
 pkgname=dde-shell-git
-_pkgname=dde-shell
+_pkgname=lingmo-shell
 pkgver=0.0.4.r4.gd73711c
 pkgrel=1
 pkgdesc='New DDE shell'
-sourcename=dde-shell
+sourcename=lingmo-shell
 sourcetars=("$sourcename"_"$pkgver".tar.xz)
 sourcedir="$sourcename"
 arch=('x86_64' 'aarch64')
-url="https://github.com/linuxdeepin/dde-shell"
+url="https://github.com/linuxdeepin/lingmo-shell"
 license=('LGPL3')
 depends=('dtk6declarative-git'
          'qt5-wayland'
@@ -45,8 +45,8 @@ makedepends=('git'
              'libnm'
              'networkmanager-qt'
 )
-conflicts=('dde-shell')
-provides=('dde-shell')
+conflicts=('lingmo-shell')
+provides=('lingmo-shell')
 groups=('deepin-git')
 source=("${sourcetars[@]}")
 sha512sums=('SKIP')

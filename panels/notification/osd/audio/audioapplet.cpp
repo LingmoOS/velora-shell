@@ -16,9 +16,9 @@ namespace osd {
 
 static DDBusSender audioInter()
 {
-    return DDBusSender().service("org.deepin.dde.Audio1")
+    return DDBusSender().service("org.lingmo.Audio1")
         .path("/org/deepin/dde/Audio1")
-        .interface("org.deepin.dde.Audio1");
+        .interface("org.lingmo.Audio1");
 }
 
 static DDBusSender audioSinkInter()
@@ -29,9 +29,9 @@ static DDBusSender audioSinkInter()
         return DDBusSender();
     }
     const auto path = qdbus_cast<QDBusObjectPath>(defaultSink);
-    return DDBusSender().service("org.deepin.dde.Audio1")
+    return DDBusSender().service("org.lingmo.Audio1")
         .path(path.path())
-        .interface("org.deepin.dde.Audio1.Sink");
+        .interface("org.lingmo.Audio1.Sink");
 }
 
 AudioApplet::AudioApplet(QObject *parent)

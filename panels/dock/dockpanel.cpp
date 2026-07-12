@@ -55,19 +55,19 @@ bool DockPanel::init()
 {
     DockAdaptor* adaptor = new DockAdaptor(this);
     Q_UNUSED(adaptor)
-    QDBusConnection::sessionBus().registerService("org.deepin.ds.Dock");
-    QDBusConnection::sessionBus().registerObject("/org/deepin/ds/Dock", "org.deepin.ds.Dock", this);
+    QDBusConnection::sessionBus().registerService("org.lingmo.ds.Dock");
+    QDBusConnection::sessionBus().registerObject("/org/lingmo/ds/Dock", "org.lingmo.ds.Dock", this);
 
     // for old api compatible
     DockDBusProxy* proxy = new DockDBusProxy(this);
     DockFrontAdaptor* dockFrontAdaptor = new DockFrontAdaptor(proxy);
     Q_UNUSED(dockFrontAdaptor)
-    QDBusConnection::sessionBus().registerService("org.deepin.dde.Dock1");
-    QDBusConnection::sessionBus().registerObject("/org/deepin/dde/Dock1", "org.deepin.dde.Dock1", proxy);
+    QDBusConnection::sessionBus().registerService("org.lingmo.Dock1");
+    QDBusConnection::sessionBus().registerObject("/org/lingmo/Dock1", "org.lingmo.Dock1", proxy);
 
     DockDaemonAdaptor* dockDaemonAdaptor = new DockDaemonAdaptor(proxy);
-    QDBusConnection::sessionBus().registerService("org.deepin.dde.daemon.Dock1");
-    QDBusConnection::sessionBus().registerObject("/org/deepin/dde/daemon/Dock1", "org.deepin.dde.daemon.Dock1", proxy);
+    QDBusConnection::sessionBus().registerService("org.lingmo.daemon.Dock1");
+    QDBusConnection::sessionBus().registerObject("/org/lingmo/daemon/Dock1", "org.lingmo.daemon.Dock1", proxy);
     connect(this, &DockPanel::rootObjectChanged, this, [this](){
         connect(window(), &QWindow::screenChanged, this, [ = ] {
             // FIXME: find why window screen changed and fix it
@@ -170,7 +170,7 @@ bool DockPanel::init()
     });
 
     // TODO: get launchpad status from applet not dbus
-    QDBusConnection::sessionBus().connect("org.deepin.dde.Launcher1", "/org/deepin/dde/Launcher1", "org.deepin.dde.Launcher1", "VisibleChanged", this, SLOT(launcherVisibleChanged(bool)));
+    QDBusConnection::sessionBus().connect("org.lingmo.Launcher1", "/org/lingmo/Launcher1", "org.lingmo.Launcher1", "VisibleChanged", this, SLOT(launcherVisibleChanged(bool)));
     if (showInPrimary())
         connect(qApp, &QGuiApplication::primaryScreenChanged, this, &DockPanel::updateDockScreen, Qt::UniqueConnection);
 
@@ -346,9 +346,9 @@ bool DockPanel::debugMode() const
 void DockPanel::openDockSettings() const
 {
     DDBusSender()
-        .service(QStringLiteral("org.deepin.dde.ControlCenter1"))
+        .service(QStringLiteral("org.lingmo.ControlCenter1"))
         .path(QStringLiteral("/org/deepin/dde/ControlCenter1"))
-        .interface(QStringLiteral("org.deepin.dde.ControlCenter1"))
+        .interface(QStringLiteral("org.lingmo.ControlCenter1"))
         .method(QStringLiteral("ShowPage"))
         .arg(QStringLiteral("personalization/dock"))
         .call();

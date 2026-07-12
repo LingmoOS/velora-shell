@@ -15,9 +15,9 @@ namespace osd {
 
 static DDBusSender displayInter()
 {
-    return DDBusSender().service("org.deepin.dde.Display1")
+    return DDBusSender().service("org.lingmo.Display1")
         .path("/org/deepin/dde/Display1")
-        .interface("org.deepin.dde.Display1");
+        .interface("org.lingmo.Display1");
 }
 
 BrightnessApplet::BrightnessApplet(QObject *parent)

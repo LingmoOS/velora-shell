@@ -13,7 +13,7 @@ class OsdPanel;
 class OsdDBusAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.Osd1")
+    Q_CLASSINFO("D-Bus Interface", "org.lingmo.Osd1")
 
 public:
     explicit OsdDBusAdaptor(QObject *parent = nullptr);

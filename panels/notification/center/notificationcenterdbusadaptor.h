@@ -13,7 +13,7 @@ class NotificationCenterProxy;
 class NotificationCenterDBusAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
-    Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.Widgets1")
+    Q_CLASSINFO("D-Bus Interface", "org.lingmo.Widgets1")
 
 public:
     explicit NotificationCenterDBusAdaptor(QObject *parent = nullptr);

@@ -25,7 +25,7 @@ signals:
 private:
     void initDBusProxy();
 private:
-    QScopedPointer<org::deepin::dde::Appearance1> m_interface;
+    QScopedPointer<org::lingmo::Appearance1> m_interface;
 };
 
 }

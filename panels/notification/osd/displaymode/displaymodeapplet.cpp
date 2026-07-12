@@ -22,9 +22,9 @@ Q_DECLARE_LOGGING_CATEGORY(osdLog)
 
 static DDBusSender displayInter()
 {
-    return DDBusSender().service("org.deepin.dde.Display1")
+    return DDBusSender().service("org.lingmo.Display1")
         .path("/org/deepin/dde/Display1")
-        .interface("org.deepin.dde.Display1");
+        .interface("org.lingmo.Display1");
 }
 
 DPItem::DPItem(const QString &text, const QString &iconName, int mode, QObject *parent)

@@ -50,7 +50,7 @@ bool NotificationCenterPanel::load()
 bool NotificationCenterPanel::init()
 {
     auto bus = QDBusConnection::sessionBus();
-    if (!bus.registerObject("/org/deepin/dde/shell/notification/center",
+    if (!bus.registerObject("/org/lingmo/shell/notification/center",
                             "org.deepin.dde.shell.notification.center",
                             m_proxy,
                             QDBusConnection::ExportAllSlots)) {
@@ -60,10 +60,10 @@ bool NotificationCenterPanel::init()
 
     // TODO compatible with old notification center
     QDBusConnection connection = QDBusConnection::sessionBus();
-    connection.interface()->registerService("org.deepin.dde.Widgets1",
+    connection.interface()->registerService("org.lingmo.Widgets1",
                                             QDBusConnectionInterface::ReplaceExistingService,
                                             QDBusConnectionInterface::AllowReplacement);
-    if (!connection.registerObject("/org/deepin/dde/Widgets1", m_proxy)) {
+    if (!connection.registerObject("/org/lingmo/Widgets1", m_proxy)) {
         return false;
     }
     new NotificationCenterDBusAdaptor(m_proxy);

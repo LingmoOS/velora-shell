@@ -1,12 +1,12 @@
-Source: velora-shell
+Source: lingmo-shell
 Section: lingmo
 Priority: optional
 Maintainer: Lingmo OS Team <team@lingmo.org>
 Build-Depends:
  debhelper-compat (= 13),
  cmake,
- dde-application-manager-api (>= 1.2.48),
- velora-tray-loader-dev (> 2.0.24),
+ lingmo-application-manager-api (>= 1.2.48),
+ lingmo-tray-loader-dev (> 2.0.24),
  extra-cmake-modules,
  libdtk6core-bin,
  libdtk6core-dev,
@@ -41,9 +41,9 @@ Build-Depends:
  treeland-protocols,
  wayland-protocols,
 Standards-Version: 4.6.2
-Homepage: https://github.com/LingmoOS/velora-shell
+Homepage: https://github.com/LingmoOS/lingmo-shell
 
-Package: libdde-shell
+Package: liblingmo-shell
 Architecture: any
 Depends:
  ${misc:Depends},
@@ -52,11 +52,11 @@ Multi-Arch: same
 Description: DDE Shell library
  DDE Shell is a plugin system that integrates plugins developed based on this plugin system into DDE.
 
-Package: dde-shell
+Package: lingmo-shell
 Architecture: any
 Depends:
  lingmo-dock,
- libdde-shell (= ${binary:Version}),
+ liblingmo-shell (= ${binary:Version}),
  libdtk6declarative,
  libqt6sql6-sqlite,
  libqt6svg6,
@@ -69,24 +69,24 @@ Depends:
  ${misc:Depends},
  ${shlibs:Depends},
 Breaks:
- dde-clipboard (<< 1:6.0.14),
-Description: An wrapper for developed based on dde-shell plugin system
+ lingmo-clipboard (<< 1:6.0.14),
+Description: An wrapper for developed based on lingmo-shell plugin system
 
-Package: dde-shell-example
+Package: lingmo-shell-example
 Architecture: any
 Depends:
- libdde-shell (= ${binary:Version}),
+ liblingmo-shell (= ${binary:Version}),
  qml6-module-qt-labs-platform,
  ${misc:Depends},
  ${shlibs:Depends},
 Multi-Arch: same
 Description: DDE Shell example
- This package contains some plugins based on dde-shell plugin system.
+ This package contains some plugins based on lingmo-shell plugin system.
 
-Package: libdde-shell-dev
+Package: liblingmo-shell-dev
 Architecture: any
 Depends:
- libdde-shell (= ${binary:Version}),
+ liblingmo-shell (= ${binary:Version}),
  libdtk6core-dev,
  qt6-base-dev,
  qt6-declarative-dev,

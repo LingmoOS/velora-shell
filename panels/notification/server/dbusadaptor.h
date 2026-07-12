@@ -39,7 +39,7 @@ class DDENotificationDbusAdaptor : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_PROPERTY(uint recordCount READ recordCount NOTIFY RecordCountChanged)
-    Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.Notification1")
+    Q_CLASSINFO("D-Bus Interface", "org.lingmo.Notification1")
 
 public:
     explicit DDENotificationDbusAdaptor(QObject *parent = nullptr);

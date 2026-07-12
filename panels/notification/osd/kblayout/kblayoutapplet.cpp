@@ -19,9 +19,9 @@ Q_LOGGING_CATEGORY(osdKBLog, "org.deepin.dde.shell.osd.kblayout")
 
 static DDBusSender keyboardInter()
 {
-    return DDBusSender().service("org.deepin.dde.InputDevices1")
+    return DDBusSender().service("org.lingmo.InputDevices1")
         .path("/org/deepin/dde/InputDevice1/Keyboard")
-        .interface("org.deepin.dde.InputDevice1.Keyboard");
+        .interface("org.lingmo.InputDevice1.Keyboard");
 }
 
 KBLayout::KBLayout(const QString &key, const QString &text, QObject *parent)

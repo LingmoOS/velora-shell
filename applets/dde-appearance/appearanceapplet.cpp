@@ -18,7 +18,7 @@ AppearanceApplet::AppearanceApplet(QObject *parent)
     : DApplet(parent)
 {
     auto watcher = new QDBusServiceWatcher(this);
-    watcher->addWatchedService("org.deepin.dde.Appearance1");
+    watcher->addWatchedService("org.lingmo.dde.Appearance1");
     watcher->setConnection(QDBusConnection::sessionBus());
     connect(watcher, &QDBusServiceWatcher::serviceRegistered, this, [this] (const QString & service) {
         Q_UNUSED(service)
@@ -49,8 +49,8 @@ qreal AppearanceApplet::opacity() const
 void AppearanceApplet::initDBusProxy()
 {
     qDebug() << "Init appearance dbus proxy.";
-    m_interface.reset(new org::deepin::dde::Appearance1("org.deepin.dde.Appearance1",
-                                                        "/org/deepin/dde/Appearance1",
+    m_interface.reset(new org::lingmo::Appearance1("org.lingmo.dde.Appearance1",
+                                                        "/org/lingmo/dde/Appearance1",
                                                         QDBusConnection::sessionBus(),
                                                         this));
     if (!m_interface->isValid()) {
@@ -60,7 +60,7 @@ void AppearanceApplet::initDBusProxy()
     }
 
     m_interface->setSync(false);
-    QObject::connect(m_interface.data(), &org::deepin::dde::Appearance1::OpacityChanged, this, &AppearanceApplet::opacityChanged);
+    QObject::connect(m_interface.data(), &org::lingmo::Appearance1::OpacityChanged, this, &AppearanceApplet::opacityChanged);
     Q_EMIT opacityChanged();
 }
 

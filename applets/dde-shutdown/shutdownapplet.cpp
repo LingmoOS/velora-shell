@@ -65,8 +65,8 @@ bool ShutdownApplet::requestShutdown(const QString &type)
         } else {
             QString method = type.isEmpty() ? "Show" : type;
             DDBusSender()
-            .service("org.deepin.dde.ShutdownFront1")
-            .interface("org.deepin.dde.ShutdownFront1")
+            .service("org.lingmo.ShutdownFront1")
+            .interface("org.lingmo.ShutdownFront1")
             .path("/org/deepin/dde/ShutdownFront1")
             .method(method)
             .call();

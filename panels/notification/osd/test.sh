@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Listen to the `org.deepin.dde.Osd1` received by `dde-osd` and forward it to `org.deepin.dde.Shell`
-#busctl --user monitor --match="type='method_call',eavesdrop='true',destination='org.deepin.dde.Osd1'" -j |jq --unbuffered -r '.payload.data[0]' |xargs -I {}  dbus-send --session --type=method_call --print-reply --dest=org.deepin.dde.Shell /org/deepin/osdService org.deepin.osdService.showText string:{}
+#busctl --user monitor --match="type='method_call',eavesdrop='true',destination='org.lingmo.Osd1'" -j |jq --unbuffered -r '.payload.data[0]' |xargs -I {}  dbus-send --session --type=method_call --print-reply --dest=org.lingmo.Shell /org/lingmo/osdService org.lingmo.osdService.showText string:{}
 
 audio=("AudioUp" "AudioDown" "AudioMute" "AudioUpAsh" "AudioDownAsh" "AudioMuteAsh")
 brightness=("BrightnessUp" "BrightnessDown" "BrightnessUpAsh" "BrightnessDownAsh")
@@ -10,14 +10,14 @@ display=("SwitchMonitors")
 kblayout=("SwitchLayout")
 windoweffect=("SwitchWM")
 
-#e.g: dbus-send --session --type=method_call --print-reply --dest=org.deepin.dde.Shell /org/deepin/osdService org.deepin.osdService.showText string:AudioUp
+#e.g: dbus-send --session --type=method_call --print-reply --dest=org.lingmo.Shell /org/lingmo/osdService org.lingmo.osdService.showText string:AudioUp
 
 for type in  ${audio[@]} ${kblayout[@]} ${display[@]} ${brightness[@]} ${default[@]} ${windoweffect[@]} ;
 do
 
-echo dbus-send --session --type=method_call --print-reply --dest=org.deepin.dde.Osd1 / org.deepin.dde.Osd1.ShowOSD string:$type
+echo dbus-send --session --type=method_call --print-reply --dest=org.lingmo.Osd1 / org.lingmo.Osd1.ShowOSD string:$type
 
-dbus-send --session --type=method_call --print-reply --dest=org.deepin.dde.Osd1 / org.deepin.dde.Osd1.ShowOSD string:$type
+dbus-send --session --type=method_call --print-reply --dest=org.lingmo.Osd1 / org.lingmo.Osd1.ShowOSD string:$type
 sleep 1
 
 done

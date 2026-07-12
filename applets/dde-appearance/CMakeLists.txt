@@ -13,7 +13,7 @@ target_link_libraries(dde-appearance PRIVATE
     Qt${QT_MAJOR_VERSION}::DBus
 )
 
-dtk_add_dbus_interface(DBusInterface org.deepin.dde.Appearance1.xml Appearance1)
+dtk_add_dbus_interface(DBusInterface org.lingmo.Appearance1.xml Appearance1)
 target_sources(dde-appearance PUBLIC ${DBusInterface})
 
 ds_install_package(PACKAGE org.deepin.ds.dde-appearance TARGET dde-appearance)

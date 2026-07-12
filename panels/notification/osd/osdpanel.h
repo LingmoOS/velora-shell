@@ -14,7 +14,7 @@ class OsdPanel : public DS_NAMESPACE::DPanel
     Q_OBJECT
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(QString osdType READ osdType NOTIFY osdTypeChanged FINAL)
-    Q_CLASSINFO("D-Bus Interface", "org.deepin.dde.shell.osd")
+    Q_CLASSINFO("D-Bus Interface", "org.lingmo.shell.osd")
 public:
     explicit OsdPanel(QObject *parent = nullptr);
 

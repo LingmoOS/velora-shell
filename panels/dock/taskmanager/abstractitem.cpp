@@ -11,8 +11,8 @@ AbstractItem::AbstractItem(const QString& id, QObject* parent)
     : QObject(parent)
 {
     new ItemAdaptor(this);
-    QDBusConnection::sessionBus().registerService(QStringLiteral("org.deepin.ds.Dock.TaskManager.Item"));
-    QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/deepin/ds/Dock/TaskManager/Item/") + id, "org.deepin.ds.Dock.TaskManager.Item", this);
+    QDBusConnection::sessionBus().registerService(QStringLiteral("org.lingmo.ds.Dock.TaskManager.Item"));
+    QDBusConnection::sessionBus().registerObject(QStringLiteral("/org/lingmo/ds/Dock/TaskManager/Item/") + id, "org.lingmo.ds.Dock.TaskManager.Item", this);
 }
 
 }

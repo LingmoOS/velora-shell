@@ -211,7 +211,7 @@ bool NotifyAccessor::applicationPin(const QString &appId) const
 void NotifyAccessor::openNotificationSetting()
 {
     qDebug(notifyLog) << "Open notification setting";
-    QDBusMessage msg = QDBusMessage::createMethodCall("org.deepin.dde.ControlCenter1",
+    QDBusMessage msg = QDBusMessage::createMethodCall("org.lingmo.ControlCenter1",
                                                        "/org/deepin/dde/ControlCenter1",
                                                        "org.deepin.dde.ControlCenter1",
                                                        "ShowPage");
