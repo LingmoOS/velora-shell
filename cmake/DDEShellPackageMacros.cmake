@@ -97,6 +97,6 @@ function(ds_handle_package_translation)
         IMMEDIATE_CALL
     )
 
-    # /usr/share/dde-shell/org.deepin.xxx/translations/org.deepin.xxx.qm
+    # /usr/share/lingmo-shell/org.deepin.xxx/translations/org.deepin.xxx.qm
     install(FILES ${TRANSLATED_FILES} DESTINATION ${DDE_SHELL_TRANSLATION_INSTALL_DIR}/${_config_PACKAGE}/translations)
 endfunction()

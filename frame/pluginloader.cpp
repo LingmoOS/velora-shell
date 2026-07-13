@@ -109,7 +109,7 @@ public:
             result << packageDir;
 
         for (const auto &item : QStandardPaths::standardLocations(QStandardPaths::GenericDataLocation)) {
-            result << item + "/dde-shell";
+            result << item + "/lingmo-shell";
         }
         qCDebug(dsLog()) << "Builtin package paths" << result;
 

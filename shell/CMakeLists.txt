@@ -53,19 +53,19 @@ target_link_libraries(dde-shell PRIVATE
 configure_file(${CMAKE_SOURCE_DIR}/misc/dde-shell-plugin@.service.in
     ${CMAKE_CURRENT_BINARY_DIR}/dde-shell-plugin@.service
     @ONLY)
-configure_file(${CMAKE_SOURCE_DIR}/misc/dde-shell@.service.in
-    ${CMAKE_CURRENT_BINARY_DIR}/dde-shell@.service
+configure_file(${CMAKE_SOURCE_DIR}/misc/lingmo-shell@.service.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lingmo-shell@.service
     @ONLY)
 
 # debug config file
 install(FILES ${CMAKE_SOURCE_DIR}/misc/deepin-debug-config/org.deepin.dde.shell.json
     DESTINATION ${CMAKE_INSTALL_DATADIR}/deepin-debug-config/deepin-debug-config.d)
 install(FILES ${CMAKE_SOURCE_DIR}/misc/deepin-log-config/org.deepin.dde.shell.json
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/deepin-log-viewer/deepin-log.conf.d)
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/lingmo-log-viewer/deepin-log.conf.d)
 
 install(TARGETS dde-shell DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-shell@.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/lingmo-shell@.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dde-shell-plugin@.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
 dtk_add_config_meta_files(APPID org.deepin.dde.shell FILES org.deepin.dde.shell.json)
 dtk_add_config_override_files(APPID org.deepin.dde.shell META_NAME org.deepin.dtk.preference FILES overrides/org.deepin.dtk.preference.json)
