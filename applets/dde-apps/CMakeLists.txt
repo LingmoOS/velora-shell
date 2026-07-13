@@ -6,29 +6,35 @@ find_package(Qt${QT_VERSION_MAJOR} ${REQUIRED_QT_VERSION} REQUIRED COMPONENTS DB
 find_package(DDEApplicationManager REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
+# Keep the installed API location independent from legacy package-config variables.
+# The Lingmo API package installs its D-Bus XML definitions in this directory.
+if(NOT DEFINED LINGMO_APPLICATION_MANAGER_DBUS_API_DIR)
+    set(LINGMO_APPLICATION_MANAGER_DBUS_API_DIR
+        "${CMAKE_INSTALL_FULL_DATAROOTDIR}/lingmo-application-manager")
+endif()
 set_source_files_properties(
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.Application.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.Application.xml
     PROPERTIES  INCLUDE api/types/am.h
                 CLASSNAME Application
 )
 
 set_source_files_properties(
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.xml
     PROPERTIES  INCLUDE api/types/am.h
                 CLASSNAME ApplicationManager
 )
 
 set_source_files_properties(
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ObjectManager1.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ObjectManager1.xml
     PROPERTIES  INCLUDE api/types/am.h
                 CLASSNAME ObjectManager
 )
 
 qt_add_dbus_interfaces(
     DBUS_INTERFACES
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.Application.xml
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.xml
-    ${DDE_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ObjectManager1.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.Application.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ApplicationManager1.xml
+    ${LINGMO_APPLICATION_MANAGER_DBUS_API_DIR}/org.desktopspec.ObjectManager1.xml
 )
 
 
