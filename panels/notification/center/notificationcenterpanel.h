@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "dockproxy.h"
 #include "panel.h"
 
 namespace notification {
@@ -13,6 +14,7 @@ class NotificationCenterPanel : public DS_NAMESPACE::DPanel
 {
     Q_OBJECT
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged FINAL)
+    Q_PROPERTY(DockProxy *dock READ dock CONSTANT FINAL)
 public:
     explicit NotificationCenterPanel(QObject *parent = nullptr);
     ~NotificationCenterPanel();
@@ -23,6 +25,7 @@ public:
     bool visible() const;
     void setVisible(bool newVisible);
     Q_INVOKABLE void close();
+    DockProxy *dock() const;
 
 Q_SIGNALS:
     void visibleChanged();
@@ -33,5 +36,6 @@ private slots:
 private:
     bool m_visible = false;
     NotificationCenterProxy *m_proxy = nullptr;
+    DockProxy *m_dock = nullptr;
 };
 }

@@ -24,12 +24,18 @@ namespace notification
 BubblePanel::BubblePanel(QObject *parent)
     : DPanel(parent)
     , m_bubbles(new BubbleModel(this))
+    , m_dock(new DockProxy(this))
 {
 }
 
 BubblePanel::~BubblePanel()
 {
 
+}
+
+DockProxy *BubblePanel::dock() const
+{
+    return m_dock;
 }
 
 bool BubblePanel::load()

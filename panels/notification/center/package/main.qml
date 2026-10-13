@@ -13,49 +13,29 @@ import org.deepin.ds.notificationcenter
 
 Window {
     id: root
-    
-    // 获取dock所在的屏幕
-    function getDockScreen() {
-        let dockApplet = DS.applet("org.deepin.ds.dock")
-        if (!dockApplet) {
-            return Qt.application.screens[0]
-        }
-        
-        let dockScreenName = dockApplet.screenName
-        
-        // 遍历所有屏幕，找到与dock屏幕名称匹配的屏幕
-        for (let i = 0; i < Qt.application.screens.length; i++) {
-            if (Qt.application.screens[i].name === dockScreenName) {
-                return Qt.application.screens[i]
-            }
-        }
-        
-        // 如果没有找到匹配的屏幕，返回默认屏幕
-        return Qt.application.screens[0]
-    }
-    
-    function windowMargin(position) {
-        let dockApplet = DS.applet("org.deepin.ds.dock")
-        if (!dockApplet)
+
+    // 本发行版任务栏由 lingmo-dock 提供，dde-shell 自带的 dock 面板并不编译，
+    // 所以 DS.applet("org.deepin.ds.dock") 取不到任务栏，避让会静默失效。
+    // 改为读 Panel.dock（DockProxy，查 org.deepin.dde.Dock1 / daemon.Dock1）。
+    function dockReserve(position) {
+        let dock = Panel.dock
+        if (!dock || !dock.available)
             return 0
 
-        let dockScreen = dockApplet.screenName
-        let screen = root.screen.name
-        if (dockScreen !== screen)
+        // 只避让与自身在同一块屏幕上的任务栏
+        if (dock.screen !== root.screen)
+            return 0
+        if (dock.position !== position)
             return 0
 
-        let dockPosition = dockApplet.position
-        if (dockPosition !== position)
-            return 0
-            
-        let frontendRect = dockApplet.frontendWindowRect
-        let dpr = root.screen.devicePixelRatio
-        let dockGeometry = Qt.rect(
-            frontendRect.x / dpr,
-            frontendRect.y / dpr,
-            frontendRect.width / dpr,
-            frontendRect.height / dpr
-        )
+        let dockRect = dock.rect
+        let vertical = (position === 0 || position === 2)   // DOCK_TOP / DOCK_BOTTOM
+        let cap = dock.dockSize > 0 ? dock.dockSize : (vertical ? dockRect.height : dockRect.width)
+
+        // HideState == Hide(2)：任务栏已滑出屏幕，按完整尺寸预留，
+        // 避免它弹出时压住通知
+        if (dock.hideState === 2)
+            return cap
 
         let screenGeometry = Qt.rect(
             root.screen.virtualX,
@@ -64,23 +44,29 @@ Window {
             root.screen.height
         )
 
+        // cap 用于挡住位置切换瞬间几何尚未更新的错误值
         switch (position) {
             case 0: { // DOCK_TOP
-                let visibleHeight = Math.max(0, dockGeometry.y + dockGeometry.height - screenGeometry.y)
-                return Math.min(visibleHeight, dockGeometry.height) 
+                let visibleHeight = Math.max(0, dockRect.y + dockRect.height - screenGeometry.y)
+                return Math.min(visibleHeight, cap)
             }
             case 1: { // DOCK_RIGHT
-                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockGeometry.x)
-                return Math.min(visibleWidth, dockGeometry.width)
+                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockRect.x)
+                return Math.min(visibleWidth, cap)
             }
             case 2: { // DOCK_BOTTOM
-                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockGeometry.y)
-                return Math.min(visibleHeight, dockGeometry.height)
+                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockRect.y)
+                return Math.min(visibleHeight, cap)
+            }
+            case 3: { // DOCK_LEFT
+                let visibleWidth = Math.max(0, dockRect.x + dockRect.width - screenGeometry.x)
+                return Math.min(visibleWidth, cap)
             }
             return 0
         }
     }
 
+    
     // visible: true
     visible: Panel.visible
     flags: Qt.Tool
@@ -90,9 +76,9 @@ Window {
     // height: 800
     DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
     DLayerShellWindow.anchors: DLayerShellWindow.AnchorRight | DLayerShellWindow.AnchorTop | DLayerShellWindow.AnchorBottom
-    DLayerShellWindow.topMargin: windowMargin(0) + contentPadding
-    DLayerShellWindow.rightMargin: windowMargin(1) + contentPadding
-    DLayerShellWindow.bottomMargin: windowMargin(2) + contentPadding
+    DLayerShellWindow.topMargin: dockReserve(0) + contentPadding
+    DLayerShellWindow.rightMargin: dockReserve(1) + contentPadding
+    DLayerShellWindow.bottomMargin: dockReserve(2) + contentPadding
     DLayerShellWindow.exclusionZone: -1
     DLayerShellWindow.keyboardInteractivity: DLayerShellWindow.KeyboardInteractivityOnDemand
     palette: DTK.palette
@@ -106,13 +92,8 @@ Window {
     DWindow.enableBlurWindow: true
     DWindow.borderColor: DTK.themeType === ApplicationHelper.DarkType ? Qt.rgba(0, 0, 0, 0.8) : Qt.rgba(0, 0, 0, 0.06)
 
-    // 修复：通知中心屏幕跟随任务栏屏幕，而不是硬编码为第一个屏幕
-    screen: getDockScreen()
-    // TODO `Qt.application.screens[0]` maybe invalid, why screen is changed.
-    onScreenChanged: {
-        // 修复：屏幕变化时重新获取dock所在的屏幕
-        root.screen = Qt.binding(function () { return getDockScreen() })
-    }
+    // 跟随任务栏所在屏幕；取不到时退回首个屏幕
+    screen: (Panel.dock && Panel.dock.screen) ? Panel.dock.screen : Qt.application.screens[0]
 
     onVisibleChanged: function (v) {
         if (v) {
@@ -131,10 +112,6 @@ Window {
         target: DS.applet("org.deepin.ds.dock")
         function onRequestClosePopup() {
             Panel.close()
-        }
-        // 修复：监听dock屏幕变化，同步更新通知中心屏幕
-        function onScreenNameChanged() {
-            root.screen = getDockScreen()
         }
     }
 

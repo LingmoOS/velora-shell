@@ -13,30 +13,28 @@ import org.deepin.dtk 1.0
 Window {
     id: root
 
-    function windowMargin(position) {
-        let dockApplet = DS.applet("org.deepin.ds.dock")
-        if (!dockApplet)
+    // 本发行版任务栏由 lingmo-dock 提供，dde-shell 自带的 dock 面板并不编译，
+    // 所以 DS.applet("org.deepin.ds.dock") 取不到任务栏，避让会静默失效。
+    // 改为读 Applet.dock（DockProxy，查 org.deepin.dde.Dock1 / daemon.Dock1）。
+    function dockReserve(position) {
+        let dock = Applet.dock
+        if (!dock || !dock.available)
             return 0
 
-        let dockScreen = dockApplet.screenName
-        let screen = root.screen.name
-        if (dockScreen !== screen)
+        // 只避让与自身在同一块屏幕上的任务栏
+        if (dock.screen !== root.screen)
+            return 0
+        if (dock.position !== position)
             return 0
 
-        let dockPosition = dockApplet.position
-        if (dockPosition !== position)
-            return 0
+        let dockRect = dock.rect
+        let vertical = (position === 0 || position === 2)   // DOCK_TOP / DOCK_BOTTOM
+        let cap = dock.dockSize > 0 ? dock.dockSize : (vertical ? dockRect.height : dockRect.width)
 
-        // Use frontendWindowRect to calculate the actual visible dock area,
-        // so the margin accurately tracks dock position during hide/show animations
-        let frontendRect = dockApplet.frontendWindowRect
-        let dpr = root.screen.devicePixelRatio
-        let dockGeometry = Qt.rect(
-            frontendRect.x / dpr,
-            frontendRect.y / dpr,
-            frontendRect.width / dpr,
-            frontendRect.height / dpr
-        )
+        // HideState == Hide(2)：任务栏已滑出屏幕，按完整尺寸预留，
+        // 避免它弹出时压住通知
+        if (dock.hideState === 2)
+            return cap
 
         let screenGeometry = Qt.rect(
             root.screen.virtualX,
@@ -45,23 +43,23 @@ Window {
             root.screen.height
         )
 
-        // Cap margin at dockSize to prevent incorrect values during position transitions
-        // (when frontendWindowRect may temporarily have wrong dimensions because
-        // position() changes immediately but window geometry hasn't updated yet)
-        let dockSize = dockApplet.dockSize
-
+        // cap 用于挡住位置切换瞬间几何尚未更新的错误值
         switch (position) {
             case 0: { // DOCK_TOP
-                let visibleHeight = Math.max(0, dockGeometry.y + dockGeometry.height - screenGeometry.y)
-                return Math.min(visibleHeight, dockSize)
+                let visibleHeight = Math.max(0, dockRect.y + dockRect.height - screenGeometry.y)
+                return Math.min(visibleHeight, cap)
             }
             case 1: { // DOCK_RIGHT
-                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockGeometry.x)
-                return Math.min(visibleWidth, dockSize)
+                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockRect.x)
+                return Math.min(visibleWidth, cap)
             }
             case 2: { // DOCK_BOTTOM
-                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockGeometry.y)
-                return Math.min(visibleHeight, dockSize)
+                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockRect.y)
+                return Math.min(visibleHeight, cap)
+            }
+            case 3: { // DOCK_LEFT
+                let visibleWidth = Math.max(0, dockRect.x + dockRect.width - screenGeometry.x)
+                return Math.min(visibleWidth, cap)
             }
             return 0
         }
@@ -72,9 +70,9 @@ Window {
     height: root.screen.height
     DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
     DLayerShellWindow.anchors: DLayerShellWindow.AnchorBottom | DLayerShellWindow.AnchorRight
-    DLayerShellWindow.topMargin: windowMargin(0)
-    DLayerShellWindow.rightMargin: windowMargin(1)
-    DLayerShellWindow.bottomMargin: windowMargin(2)
+    DLayerShellWindow.topMargin: dockReserve(0)
+    DLayerShellWindow.rightMargin: dockReserve(1)
+    DLayerShellWindow.bottomMargin: dockReserve(2)
     DLayerShellWindow.exclusionZone: -1
     palette: DTK.palette
     ColorSelector.family: Palette.CrystalColor
@@ -83,11 +81,8 @@ Window {
     // DWindow.windowRadius: 0
     // DWindow.enabled: false
     // DWindow.enableBlurWindow: true
-    screen: Qt.application.screens[0]
-    // TODO `Qt.application.screens[0]` maybe invalid, why screen is changed.
-    onScreenChanged: {
-        root.screen = Qt.binding(function () { return Qt.application.screens[0]})
-    }
+    // 跟随任务栏所在屏幕；取不到时退回首个屏幕
+    screen: (Applet.dock && Applet.dock.screen) ? Applet.dock.screen : Qt.application.screens[0]
 
     ListView  {
         id: bubbleView

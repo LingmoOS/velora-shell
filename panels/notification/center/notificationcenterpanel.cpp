@@ -35,11 +35,17 @@ static const QString DDENotifyDBusPath = "/org/deepin/dde/Notification1";
 NotificationCenterPanel::NotificationCenterPanel(QObject *parent)
     : DPanel(parent)
     , m_proxy(new NotificationCenterProxy(this))
+    , m_dock(new DockProxy(this))
 {
 }
 
 NotificationCenterPanel::~NotificationCenterPanel()
 {
+}
+
+DockProxy *NotificationCenterPanel::dock() const
+{
+    return m_dock;
 }
 
 bool NotificationCenterPanel::load()

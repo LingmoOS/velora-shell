@@ -6,6 +6,7 @@
 
 #include "panel.h"
 #include "dataaccessor.h"
+#include "dockproxy.h"
 #include <appletproxy.h>
 
 #include <QQuickItem>
@@ -22,6 +23,7 @@ class BubblePanel : public DS_NAMESPACE::DPanel
     Q_PROPERTY(bool visible READ visible NOTIFY visibleChanged FINAL)
     Q_PROPERTY(bool enabled READ enabled WRITE setEnabled NOTIFY enabledChanged FINAL)
     Q_PROPERTY(BubbleModel *bubbles READ bubbles CONSTANT FINAL)
+    Q_PROPERTY(DockProxy *dock READ dock CONSTANT FINAL)
 public:
     explicit BubblePanel(QObject *parent = nullptr);
     ~BubblePanel();
@@ -31,6 +33,7 @@ public:
 
     bool visible() const;
     BubbleModel *bubbles() const;
+    DockProxy *dock() const;
 
     bool enabled() const;
 
@@ -65,6 +68,7 @@ private:
 private:
     bool m_visible = false;
     BubbleModel *m_bubbles = nullptr;
+    DockProxy *m_dock = nullptr;
     DS_NAMESPACE::DAppletProxy *m_notificationServer = nullptr;
     DataAccessor *m_accessor = nullptr;
     bool m_enabled = true;
