@@ -10,6 +10,7 @@
 #include <QDBusServiceWatcher>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QTimer>
 
 namespace notification {
 
@@ -28,6 +29,12 @@ DockProxy::DockProxy(QObject *parent)
 {
     connect(m_watcher, &QDBusServiceWatcher::serviceRegistered, this, &DockProxy::refresh);
     connect(m_watcher, &QDBusServiceWatcher::serviceUnregistered, this, &DockProxy::refresh);
+
+    // dock 侧没有几何变更信号，轮询兜底（只是 4 次属性读取，代价很低）
+    m_pollTimer = new QTimer(this);
+    m_pollTimer->setInterval(2000);
+    connect(m_pollTimer, &QTimer::timeout, this, &DockProxy::refresh);
+    m_pollTimer->start();
 
     QDBusConnection bus = QDBusConnection::sessionBus();
     bus.connect(DockService, DockPath, DockInterface,
@@ -90,18 +97,29 @@ void DockProxy::refresh()
         dockSize = qvariant_cast<uint>(m_daemonInter->property(
             displayMode == 0 ? "WindowSizeFashion" : "WindowSizeEfficient"));
 
-        // geometry 是任务栏窗口自身几何（Qt 逻辑像素），不依赖谁去 SetFrontendWindowRect
-        rect = qvariant_cast<QRect>(m_dockInter->property("geometry"));
+        // 优先用 daemon 的 FrontendWindowRect：它由桌面插件 SetFrontendWindowRect 推上来，
+        // 就是任务栏当前可见的矩形（隐藏/弹出动画期间也会跟随）。取不到再退回
+        // Dock1.geometry（任务栏窗口自身几何）。
+        const QRect frontendRect = qvariant_cast<QRect>(m_daemonInter->property("FrontendWindowRect"));
+        const QRect windowRect = qvariant_cast<QRect>(m_dockInter->property("geometry"));
+        if (frontendRect.isValid() && !frontendRect.isEmpty())
+            rect = frontendRect;
+        else
+            rect = windowRect;
         available = rect.isValid() && !rect.isEmpty();
     }
 
+    // 按“与任务栏矩形相交面积最大”的屏幕来判定，避免任务栏压在两屏交界处时
+    // 用中心点包含法找不到屏幕（那样避让会静默失效）。
     QScreen *screen = nullptr;
     if (available) {
-        const QPoint center = rect.center();
+        qint64 bestArea = 0;
         for (QScreen *s : QGuiApplication::screens()) {
-            if (s->geometry().contains(center)) {
+            const QRect inter = s->geometry().intersected(rect);
+            const qint64 area = static_cast<qint64>(inter.width()) * inter.height();
+            if (area > bestArea) {
+                bestArea = area;
                 screen = s;
-                break;
             }
         }
     }

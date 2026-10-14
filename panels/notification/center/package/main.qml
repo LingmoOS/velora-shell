@@ -17,53 +17,45 @@ Window {
     // 本发行版任务栏由 lingmo-dock 提供，dde-shell 自带的 dock 面板并不编译，
     // 所以 DS.applet("org.deepin.ds.dock") 取不到任务栏，避让会静默失效。
     // 改为读 Panel.dock（DockProxy，查 org.deepin.dde.Dock1 / daemon.Dock1）。
+    // 判据做成“无状态”：直接拿任务栏矩形与屏幕矩形求交集，不依赖 dock.position
+    // 或屏幕对象同一性，避免任何一环取不到就静默返回 0（气泡侧同样处理）。
     function dockReserve(position) {
         let dock = Panel.dock
         if (!dock || !dock.available)
             return 0
 
-        // 只避让与自身在同一块屏幕上的任务栏
-        if (dock.screen !== root.screen)
-            return 0
-        if (dock.position !== position)
+        let d = dock.rect
+        if (!d || d.width <= 0 || d.height <= 0)
             return 0
 
-        let dockRect = dock.rect
-        let vertical = (position === 0 || position === 2)   // DOCK_TOP / DOCK_BOTTOM
-        let cap = dock.dockSize > 0 ? dock.dockSize : (vertical ? dockRect.height : dockRect.width)
-
-        // HideState == Hide(2)：任务栏已滑出屏幕，按完整尺寸预留，
-        // 避免它弹出时压住通知
-        if (dock.hideState === 2)
-            return cap
-
-        let screenGeometry = Qt.rect(
-            root.screen.virtualX,
-            root.screen.virtualY,
-            root.screen.width,
-            root.screen.height
-        )
-
-        // cap 用于挡住位置切换瞬间几何尚未更新的错误值
-        switch (position) {
-            case 0: { // DOCK_TOP
-                let visibleHeight = Math.max(0, dockRect.y + dockRect.height - screenGeometry.y)
-                return Math.min(visibleHeight, cap)
-            }
-            case 1: { // DOCK_RIGHT
-                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockRect.x)
-                return Math.min(visibleWidth, cap)
-            }
-            case 2: { // DOCK_BOTTOM
-                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockRect.y)
-                return Math.min(visibleHeight, cap)
-            }
-            case 3: { // DOCK_LEFT
-                let visibleWidth = Math.max(0, dockRect.x + dockRect.width - screenGeometry.x)
-                return Math.min(visibleWidth, cap)
-            }
+        let s = Qt.rect(root.screen.virtualX, root.screen.virtualY,
+                        root.screen.width, root.screen.height)
+        let overlapX = Math.max(0, Math.min(d.x + d.width, s.x + s.width) - Math.max(d.x, s.x))
+        let overlapY = Math.max(0, Math.min(d.y + d.height, s.y + s.height) - Math.max(d.y, s.y))
+        if (overlapX <= 0 || overlapY <= 0)
             return 0
+
+        // 横向铺开、纵向很窄 => 任务栏在上下边，按纵向重叠量预留；反之同理
+        let reserve = 0
+        if (overlapX >= overlapY) {
+            let atTop = (d.y + d.height / 2) < (s.y + s.height / 2)
+            if (position === 0 && atTop)
+                reserve = overlapY
+            else if (position === 2 && !atTop)
+                reserve = overlapY
+        } else {
+            let atLeft = (d.x + d.width / 2) < (s.x + s.width / 2)
+            if (position === 3 && atLeft)
+                reserve = overlapX
+            else if (position === 1 && !atLeft)
+                reserve = overlapX
         }
+
+        // HideState == Hide(2)：任务栏已滑出屏幕，按完整尺寸预留
+        if (reserve > 0 && dock.hideState === 2)
+            reserve = Math.max(reserve, dock.dockSize)
+
+        return reserve
     }
 
     

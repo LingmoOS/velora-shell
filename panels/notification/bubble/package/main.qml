@@ -15,54 +15,38 @@ Window {
 
     // 本发行版任务栏由 lingmo-dock 提供，dde-shell 自带的 dock 面板并不编译，
     // 所以 DS.applet("org.deepin.ds.dock") 取不到任务栏，避让会静默失效。
-    // 改为读 Applet.dock（DockProxy，查 org.deepin.dde.Dock1 / daemon.Dock1）。
-    function dockReserve(position) {
+    // 这里读 Applet.dock（DockProxy，查 daemon.Dock1 的 FrontendWindowRect /
+    // Dock1 的 geometry）。
+    //
+    // 判据刻意做得“无状态”：不再依赖 dock.position 或屏幕对象的同一性，
+    // 直接拿任务栏矩形与当前屏幕矩形求交集 —— 交界窄的那一维就是要预留的边距。
+    // 这样任务栏在上下左右任意一边、压在两屏交界处、或几何晚到时都不会静默返回 0。
+    function dockReserve() {
         let dock = Applet.dock
         if (!dock || !dock.available)
             return 0
 
-        // 只避让与自身在同一块屏幕上的任务栏
-        if (dock.screen !== root.screen)
-            return 0
-        if (dock.position !== position)
+        let d = dock.rect
+        if (!d || d.width <= 0 || d.height <= 0)
             return 0
 
-        let dockRect = dock.rect
-        let vertical = (position === 0 || position === 2)   // DOCK_TOP / DOCK_BOTTOM
-        let cap = dock.dockSize > 0 ? dock.dockSize : (vertical ? dockRect.height : dockRect.width)
+        let s = Qt.rect(root.screen.virtualX, root.screen.virtualY,
+                        root.screen.width, root.screen.height)
+
+        let overlapX = Math.max(0, Math.min(d.x + d.width, s.x + s.width) - Math.max(d.x, s.x))
+        let overlapY = Math.max(0, Math.min(d.y + d.height, s.y + s.height) - Math.max(d.y, s.y))
+        if (overlapX <= 0 || overlapY <= 0)
+            return 0
+
+        // 横向铺满、纵向很窄 => 任务栏在上下边，按纵向重叠量预留；反之同理
+        let reserve = (overlapX >= overlapY) ? overlapY : overlapX
 
         // HideState == Hide(2)：任务栏已滑出屏幕，按完整尺寸预留，
         // 避免它弹出时压住通知
         if (dock.hideState === 2)
-            return cap
+            reserve = Math.max(reserve, dock.dockSize)
 
-        let screenGeometry = Qt.rect(
-            root.screen.virtualX,
-            root.screen.virtualY,
-            root.screen.width,
-            root.screen.height
-        )
-
-        // cap 用于挡住位置切换瞬间几何尚未更新的错误值
-        switch (position) {
-            case 0: { // DOCK_TOP
-                let visibleHeight = Math.max(0, dockRect.y + dockRect.height - screenGeometry.y)
-                return Math.min(visibleHeight, cap)
-            }
-            case 1: { // DOCK_RIGHT
-                let visibleWidth = Math.max(0, screenGeometry.x + screenGeometry.width - dockRect.x)
-                return Math.min(visibleWidth, cap)
-            }
-            case 2: { // DOCK_BOTTOM
-                let visibleHeight = Math.max(0, screenGeometry.y + screenGeometry.height - dockRect.y)
-                return Math.min(visibleHeight, cap)
-            }
-            case 3: { // DOCK_LEFT
-                let visibleWidth = Math.max(0, dockRect.x + dockRect.width - screenGeometry.x)
-                return Math.min(visibleWidth, cap)
-            }
-            return 0
-        }
+        return reserve
     }
 
     visible: Applet.visible
@@ -70,9 +54,7 @@ Window {
     height: root.screen.height
     DLayerShellWindow.layer: DLayerShellWindow.LayerOverlay
     DLayerShellWindow.anchors: DLayerShellWindow.AnchorBottom | DLayerShellWindow.AnchorRight
-    DLayerShellWindow.topMargin: dockReserve(0)
-    DLayerShellWindow.rightMargin: dockReserve(1)
-    DLayerShellWindow.bottomMargin: dockReserve(2)
+    // 避让改由 bubbleView 的 bottomMargin 完成，见 dockReserve()
     DLayerShellWindow.exclusionZone: -1
     palette: DTK.palette
     ColorSelector.family: Palette.CrystalColor
@@ -92,7 +74,9 @@ Window {
             right: parent.right
             bottom: parent.bottom
             rightMargin: 10
-            bottomMargin: 10
+            // 直接偏移列表本身来避开任务栏：比塞给 layer-shell 的 margin 稳，
+            // 整屏高度的表面上 margin 的语义容易被合成器改写。
+            bottomMargin: 10 + dockReserve()
         }
 
         function updateInputRegion() {

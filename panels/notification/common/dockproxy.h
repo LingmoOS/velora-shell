@@ -12,6 +12,7 @@ QT_BEGIN_NAMESPACE
 class QDBusInterface;
 class QDBusServiceWatcher;
 class QScreen;
+class QTimer;
 QT_END_NAMESPACE
 
 namespace notification {
@@ -67,6 +68,9 @@ private:
     QDBusInterface *m_dockInter = nullptr;
     QDBusInterface *m_daemonInter = nullptr;
     QDBusServiceWatcher *m_watcher = nullptr;
+    // org.deepin.dde.Dock1 只有 pluginVisibleChanged / pluginsChanged，
+    // 没有几何变更信号，所以任务栏几何后到时无法靠信号补上；用低频轮询兜底。
+    QTimer *m_pollTimer = nullptr;
 
     bool m_available = false;
     int m_position = DockBottom;

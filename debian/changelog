@@ -1,3 +1,21 @@
+velora-shell (2.1.5.lingmo5u1) unstable; urgency=medium
+
+  * fix: 通知气泡真正避开任务栏
+    - 上一版（2.1.4.lingmo5u1）的避让依赖一串必须同时成立的判据：
+      dock.available、dock.screen === root.screen、dock.position === 期望值、
+      以及 cap/visible 非 0；任何一环取不到就静默返回 0，通知仍压住任务栏。
+      而且 org.deepin.dde.Dock1 只有 pluginVisibleChanged / pluginsChanged，
+      并没有几何变更信号，任务栏几何后到时永远不会再刷新
+    - DockProxy 改为优先读 daemon 的 FrontendWindowRect（桌面插件推上来的
+      任务栏可见矩形），取不到再退回 Dock1.geometry；屏幕按“最大相交面积”
+      判定；补 2s 轮询兜底
+    - QML 侧改为直接对任务栏矩形与屏幕矩形求交集，交界窄的那一维就是预留
+      边距，不再依赖 position 或屏幕对象同一性，四种任务栏位置统一处理
+    - 预留量由 layer-shell margin 改为偏移气泡列表的 bottomMargin
+    - 通知中心面板沿用同一套脆弱判据，一并改为矩形相交实现
+
+ -- Lingmo OS Team <team@lingmo.org>  Wed, 14 Oct 2026 16:47:54 +0800
+
 velora-shell (2.1.4.lingmo5u1) unstable; urgency=medium
 
   * fix: 通知气泡与通知中心避让任务栏安全区
