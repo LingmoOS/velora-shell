@@ -1,3 +1,13 @@
+velora-shell (2.1.6.lingmo5u1) unstable; urgency=medium
+
+  * fix: dockproxy.h 补 QScreen 完整类型
+    Q_PROPERTY(QScreen *screen ...) 只前置声明了 QScreen，Qt 6.8.2 的 moc 会因此报错：
+      error: static assertion failed: Pointer Meta Types must either point to
+      fully-defined types or be declared with Q_DECLARE_OPAQUE_POINTER(T *)
+    补上 #include <QScreen> 即可。（Qt 6.8 起该检查更严格）
+
+ -- Lingmo OS Team <team@lingmo.org>  Thu, 15 Oct 2026 21:14:48 +0800
+
 velora-shell (2.1.5.lingmo5u1) unstable; urgency=medium
 
   * fix: 通知气泡真正避开任务栏

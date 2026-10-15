@@ -7,6 +7,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QRect>
+#include <QScreen>   // Q_PROPERTY(QScreen *) 在 Qt 6.8 要求完整类型
 
 QT_BEGIN_NAMESPACE
 class QDBusInterface;
