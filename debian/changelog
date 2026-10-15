@@ -1,3 +1,15 @@
+velora-shell (2.1.7.lingmo5u1) unstable; urgency=medium
+
+  * fix: ds-notification-shared 缺少 Qt::Gui 依赖
+    dockproxy.cpp 使用 QGuiApplication::screens() / QScreen（本地化查询 lingmo-dock
+    几何时引入），但该 target 只链接了 Qt Core/DBus/Sql 与 DtkCore。构建时 autogen
+    阶段先失败：
+      panels/notification/common/dockproxy.h:10: fatal error: QScreen: No such file or directory
+    即使没有该 include，编译到 dockproxy.cpp 的 #include <QGuiApplication> 同样会失败，
+    因此补上 Qt::Gui 是必需的（同时满足 Qt 6.8 对 Q_PROPERTY(QScreen *) 完整类型的要求）。
+
+ -- Lingmo OS Team <team@lingmo.org>  Thu, 15 Oct 2026 22:48:22 +0800
+
 velora-shell (2.1.6.lingmo5u1) unstable; urgency=medium
 
   * fix: dockproxy.h 补 QScreen 完整类型
